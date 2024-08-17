@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { AuthMethod, AuthSig } from '@lit-protocol/types';
+import { AuthMethod } from '@lit-protocol/types';
 import {
   addUsers,
   getPayerAuthSig,
@@ -8,7 +8,7 @@ import {
   registerPayer,
   RegisterPayerResult,
 } from '../utils/lit';
-import { LitAbility, LitActionResource } from '@lit-protocol/auth-helpers';
+import { LitAbility, LitPKPResource } from '@lit-protocol/auth-helpers';
 import { IRelayPKP } from '@lit-protocol/types';
 import { SessionSigsMap } from '@lit-protocol/types';
 import { observable } from '@legendapp/state';
@@ -107,8 +107,8 @@ export default function useSession() {
           authMethods: [authMethod],
           resourceAbilityRequests: [
             {
-              resource: new LitActionResource('*'),
-              ability: LitAbility.LitActionExecution,
+              resource: new LitPKPResource('*'),
+              ability: LitAbility.PKPSigning,
             },
           ],
           expiration: expiration,
@@ -175,8 +175,8 @@ export default function useSession() {
         authMethods: [authMethod],
         resourceAbilityRequests: [
           {
-            resource: new LitActionResource('*'),
-            ability: LitAbility.LitActionExecution,
+            resource: new LitPKPResource('*'),
+            ability: LitAbility.PKPSigning,
           },
         ],
         expiration: expiration,

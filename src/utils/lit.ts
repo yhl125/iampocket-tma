@@ -22,7 +22,7 @@ import {
   SessionSigsMap,
   AuthSig,
 } from '@lit-protocol/types';
-import { LitAbility, LitActionResource } from '@lit-protocol/auth-helpers';
+import { LitAbility, LitPKPResource } from '@lit-protocol/auth-helpers';
 import { ethers } from 'ethers';
 
 const LIT_NETWORK = LitNetwork.DatilTest;
@@ -329,8 +329,8 @@ export async function getTelegramPKPSessionSigs(
     pkpPublicKey: pkpPublicKey,
     resourceAbilityRequests: [
       {
-        resource: new LitActionResource('*'),
-        ability: LitAbility.LitActionExecution,
+        resource: new LitPKPResource('*'),
+        ability: LitAbility.PKPSigning,
       },
     ],
     expiration: expiration,
@@ -502,20 +502,17 @@ export async function getPayerAuthSig(
 ): Promise<AuthSig> {
   try {
     console.log(`🔄 getting payer auth sig...`);
-    const response = await fetch(
-      `${iampocketRelayServer}/payer-authsig`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          payerPrivateKey: payerPrivateKey,
-          payee: payee,
-          initDataRaw: initDataRaw,
-        }),
-      }
-    );
+    const response = await fetch(`${iampocketRelayServer}/payer-authsig`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        payerPrivateKey: payerPrivateKey,
+        payee: payee,
+        initDataRaw: initDataRaw,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Error: ${await response.text()}`);
