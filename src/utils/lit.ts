@@ -265,32 +265,26 @@ function getProviderByAuthMethod(authMethod: AuthMethod) {
 export async function createPKPWithTelegram(
   initDataRaw: string
 ): Promise<IRelayPKP> {
-  const response = await fetch(
-    'https://lit-tma-relay.vercel.app/telegram/create-pkp',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ initDataRaw: initDataRaw }),
-    }
-  );
+  const response = await fetch(`${iampocketRelayServer}/telegram/create-pkp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ initDataRaw: initDataRaw }),
+  });
   return await response.json();
 }
 
 export async function getTelegramPKPs(
   initDataRaw: string
 ): Promise<IRelayPKP[]> {
-  const response = await fetch(
-    'https://lit-tma-relay.vercel.app/telegram/get-pkps',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ initDataRaw: initDataRaw }),
-    }
-  );
+  const response = await fetch(`${iampocketRelayServer}/telegram/get-pkps`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ initDataRaw: initDataRaw }),
+  });
   return await response.json();
 }
 
