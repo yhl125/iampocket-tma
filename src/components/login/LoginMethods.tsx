@@ -38,7 +38,7 @@ export default function LoginMethods({
               setView={setView}
             />
             <div className="buttons-container">
-              <Link href="/">
+              <Link href="/signup">
                 <Cell subtitle="Sign up page">signup</Cell>
               </Link>
             </div>
