@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import Link from 'next/link';
 
 import AuthMethods from '../authentication/AuthMethods';
-import { Cell, Link } from '@telegram-apps/telegram-ui';
 
 interface SignUpProps {
   handleGoogleLogin: () => Promise<void>;
@@ -21,8 +21,8 @@ export default function SignUpMethods({
   const [view, setView] = useState<AuthView>('default');
 
   return (
-    <div className="container">
-      <div className="wrapper">
+    <div className="flex items-center justify-center min-h-screen bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <div className="space-y-2 text-center">
         {error && (
           <div className="alert alert--error">
             <p>{error.message}</p>
@@ -30,11 +30,10 @@ export default function SignUpMethods({
         )}
         {view === 'default' && (
           <>
-            <h1>Get started</h1>
-            <p>
-              Create a wallet that is secured by accounts you already have. With
-              Lit-powered MPC wallets, you won&apos;t have to worry about seed
-              phrases or browser extensions.
+            <h1 className="text-3xl font-bold">Get started</h1>
+            <p className="text-muted-foreground">
+              let&apos;s create your
+              <span className="font-bold ml-1">iampocket</span>
             </p>
             <AuthMethods
               handleGoogleLogin={handleGoogleLogin}
@@ -42,9 +41,19 @@ export default function SignUpMethods({
               handleTelegramLogin={handleTelegramLogin}
               setView={setView}
             />
-            <Link href="/login">
-              <Cell subtitle="Login page">login</Cell>
-            </Link>
+            <div className="text-center">
+              <p className="mt-2 text-sm text-muted-foreground">
+                Or{' '}
+                <Link
+                  href="/login"
+                  className="font-bold text-primary hover:text-primary-foreground"
+                  prefetch={false}
+                >
+                  Login
+                </Link>{' '}
+                with your account
+              </p>
+            </div>
           </>
         )}
       </div>

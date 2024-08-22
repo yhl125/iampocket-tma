@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { AuthView } from '../signup/SignUpMethods';
+import { Button } from '@/components/ui/button';
 
 interface AuthMethodsProps {
   handleGoogleLogin: () => Promise<void>;
@@ -15,48 +16,56 @@ const AuthMethods = ({
   setView,
 }: AuthMethodsProps) => {
   return (
-    <>
-      <div className="buttons-container">
-        <div className="social-container">
-          <button
-            type="button"
-            className="btn btn--outline"
-            onClick={handleGoogleLogin}
-          >
-            <div className="btn__icon">
-              <Image src="/google.png" alt="Google logo" fill={true}></Image>
-            </div>
-            <span className="btn__label">Google</span>
-          </button>
-          <button
-            type="button"
-            className="btn btn--outline"
-            onClick={handleDiscordLogin}
-          >
-            <div className="btn__icon">
-              <Image src="/discord.png" alt="Discord logo" fill={true}></Image>
-            </div>
-            <span className="btn__label">Discord</span>
-          </button>
-          {/* <button type="button" className="btn btn--outline">
-            <div className="btn__icon">
-              <Image src="/apple.png" alt="Apple logo" fill={true}></Image>
-            </div>
-            <span className="btn__label">Apple</span>
-          </button> */}
-        </div>
-        <button
-          type="button"
-          className="btn btn--outline"
-          onClick={handleTelegramLogin}
-          >
-          <div className="btn__icon">
-            <Image src="/telegram.svg" alt="Telegram logo" fill={true}></Image>
+    <div className="flex items-center justify-center py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
+        <div className="space-y-6">
+          <div className="grid gap-3">
+            <Button
+              variant="outline"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              onClick={handleGoogleLogin}
+            >
+              <Image
+                className="mr-2"
+                src="/google.png"
+                alt="google logo"
+                width={20}
+                height={20}
+              />
+              Google
+            </Button>
+            <Button
+              variant="outline"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              onClick={handleDiscordLogin}
+            >
+              <Image
+                className="mr-2"
+                src="/discord.png"
+                alt="telegram logo"
+                width={20}
+                height={20}
+              />
+              Discord
+            </Button>
+            <Button
+              variant="outline"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              onClick={handleTelegramLogin}
+            >
+              <Image
+                className="mr-2"
+                src="/telegram.svg"
+                alt="telegram logo"
+                width={20}
+                height={20}
+              />
+              Telegram
+            </Button>
           </div>
-          <span className="btn__label">Telegram</span>
-        </button>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

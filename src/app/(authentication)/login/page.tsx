@@ -7,7 +7,7 @@ import useAccounts from '@/hooks/useAccounts';
 import { ORIGIN, signInWithDiscord, signInWithGoogle } from '@/utils/lit';
 import Loading from '@/components/Loading';
 import LoginMethods from '@/components/login/LoginMethods';
-import AccountSelection from '@/components/authentication/AccountSelection'
+import AccountSelection from '@/components/authentication/AccountSelection';
 import CreateAccount from '@/components/authentication/CreateAccount';
 import { useInitData, useLaunchParams } from '@telegram-apps/sdk-react';
 
