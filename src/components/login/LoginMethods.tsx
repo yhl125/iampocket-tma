@@ -20,7 +20,7 @@ export default function LoginMethods({
   const [view, setView] = useState<AuthView>('default');
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12">
       <div className="space-y-2 text-center">
         {error && (
           <div className="alert alert--error">
@@ -45,7 +45,7 @@ export default function LoginMethods({
                 Or{' '}
                 <Link
                   href="/signup"
-                  className="font-bold text-primary hover:text-primary-foreground"
+                  className="font-bold text-primary"
                   prefetch={false}
                 >
                   Sign up

@@ -16,13 +16,13 @@ const AuthMethods = ({
   setView,
 }: AuthMethodsProps) => {
   return (
-    <div className="flex items-center justify-center py-12 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center py-12">
       <div className="w-full max-w-md space-y-8">
         <div className="space-y-6">
           <div className="grid gap-3">
             <Button
               variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
               onClick={handleGoogleLogin}
             >
               <Image
@@ -36,7 +36,7 @@ const AuthMethods = ({
             </Button>
             <Button
               variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
               onClick={handleDiscordLogin}
             >
               <Image
@@ -50,7 +50,7 @@ const AuthMethods = ({
             </Button>
             <Button
               variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-muted"
+              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
               onClick={handleTelegramLogin}
             >
               <Image
