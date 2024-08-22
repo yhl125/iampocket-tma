@@ -1,7 +1,7 @@
-import { useState } from "react";
-import Link from "next/link";
+import { useState } from 'react';
+import Link from 'next/link';
 
-import AuthMethods from "../authentication/AuthMethods";
+import AuthMethods from '../authentication/AuthMethods';
 
 interface SignUpProps {
   handleGoogleLogin: () => Promise<void>;
@@ -10,7 +10,7 @@ interface SignUpProps {
   error?: Error;
 }
 
-export type AuthView = "default" | "telegram";
+export type AuthView = 'default' | 'telegram';
 
 export default function SignUpMethods({
   handleGoogleLogin,
@@ -18,7 +18,7 @@ export default function SignUpMethods({
   handleTelegramLogin,
   error,
 }: SignUpProps) {
-  const [view, setView] = useState<AuthView>("default");
+  const [view, setView] = useState<AuthView>('default');
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background px-4 py-12 sm:px-6 lg:px-8">
@@ -28,7 +28,7 @@ export default function SignUpMethods({
             <p>{error.message}</p>
           </div>
         )}
-        {view === "default" && (
+        {view === 'default' && (
           <>
             <h1 className="text-3xl font-bold">Get started</h1>
             <p className="text-muted-foreground">
@@ -43,14 +43,14 @@ export default function SignUpMethods({
             />
             <div className="text-center">
               <p className="mt-2 text-sm text-muted-foreground">
-                Or{" "}
+                Or{' '}
                 <Link
                   href="/login"
                   className="font-bold text-primary hover:text-primary-foreground"
                   prefetch={false}
                 >
                   Login
-                </Link>{" "}
+                </Link>{' '}
                 with your account
               </p>
             </div>

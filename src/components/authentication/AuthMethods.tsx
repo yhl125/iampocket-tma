@@ -1,6 +1,6 @@
-import Image from "next/image";
-import { AuthView } from "../signup/SignUpMethods";
-import { Button } from "@/components/ui/button";
+import Image from 'next/image';
+import { AuthView } from '../signup/SignUpMethods';
+import { Button } from '@/components/ui/button';
 
 interface AuthMethodsProps {
   handleGoogleLogin: () => Promise<void>;
