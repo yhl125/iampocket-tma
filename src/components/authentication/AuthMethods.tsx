@@ -17,53 +17,36 @@ const AuthMethods = ({
 }: AuthMethodsProps) => {
   return (
     <div className="flex items-center justify-center py-12">
-      <div className="w-full max-w-md space-y-8">
-        <div className="space-y-6">
-          <div className="grid gap-3">
-            <Button
-              variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
-              onClick={handleGoogleLogin}
-            >
-              <Image
-                className="mr-2"
-                src="/google.png"
-                alt="google logo"
-                width={20}
-                height={20}
-              />
-              Google
-            </Button>
-            <Button
-              variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
-              onClick={handleDiscordLogin}
-            >
-              <Image
-                className="mr-2"
-                src="/discord.png"
-                alt="telegram logo"
-                width={20}
-                height={20}
-              />
-              Discord
-            </Button>
-            <Button
-              variant="outline"
-              className="flex justify-center rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
-              onClick={handleTelegramLogin}
-            >
-              <Image
-                className="mr-2"
-                src="/telegram.svg"
-                alt="telegram logo"
-                width={20}
-                height={20}
-              />
-              Telegram
-            </Button>
-          </div>
-        </div>
+      <div className="flex flex-col space-y-4">
+        <Button
+          variant="outline"
+          className="w-60 flex items-center justify-center space-x-2 rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
+          onClick={handleGoogleLogin}
+        >
+          <Image src="/google.png" alt="google logo" width={20} height={20} />
+          <span>Google</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="w-60 flex items-center justify-center space-x-2 rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
+          onClick={handleDiscordLogin}
+        >
+          <Image src="/discord.png" alt="discord logo" width={20} height={20} />
+          <span>Discord</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="w-60 flex items-center justify-center space-x-2 rounded-md border border-muted py-4 px-6 text-sm font-medium text-muted-foreground hover:bg-muted"
+          onClick={handleTelegramLogin}
+        >
+          <Image
+            src="/telegram.svg"
+            alt="telegram logo"
+            width={20}
+            height={20}
+          />
+          <span>Telegram</span>
+        </Button>
       </div>
     </div>
   );
