@@ -19,8 +19,8 @@ const fontBody = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Your Application Title Goes Here',
-  description: 'Your application description goes here',
+  title: 'iampocket',
+  description: 'Simplify XRPL jouneys with iampocket',
 };
 
 export default function RootLayout({ children }: PropsWithChildren) {
