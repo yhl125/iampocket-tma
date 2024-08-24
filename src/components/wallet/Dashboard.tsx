@@ -18,6 +18,7 @@ import {
   getBalanceChanges,
 } from 'xrpl';
 import { requestFunding } from '@/utils/xrpl';
+import TokenBalance from './TokenBalance';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -129,7 +130,7 @@ export default function Dashboard() {
         {
           destination: pkpWallet.classicAddress,
           userAgent: 'xrpl.js',
-        }
+        },
       );
       console.log(classicAddressToFund, balance);
 
@@ -145,7 +146,7 @@ export default function Dashboard() {
       console.log(
         'Transaction cost:',
         dropsToXrp((prepared as any).Fee),
-        'XRP'
+        'XRP',
       );
       console.log('Transaction expires after ledger:', max_ledger);
       // Sign prepared instructions ------------------------------------------------
@@ -158,15 +159,15 @@ export default function Dashboard() {
       // Check transaction results -------------------------------------------------
       console.log(
         'Transaction result:',
-        (tx.result.meta as TransactionMetadata).TransactionResult
+        (tx.result.meta as TransactionMetadata).TransactionResult,
       );
       console.log(
         'Balance changes:',
         JSON.stringify(
           getBalanceChanges(tx.result.meta as TransactionMetadata),
           null,
-          2
-        )
+          2,
+        ),
       );
       await client.disconnect();
 
@@ -239,6 +240,7 @@ export default function Dashboard() {
             <span>Sign message</span>
           )}
         </button>
+        <TokenBalance sessionSigs={sessionSigs$.get()} currentAccount={currentAccount$.get()} />
       </div>
     </div>
   );
