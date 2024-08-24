@@ -217,11 +217,11 @@ export default function TransactionHistory() {
       pkpPubKey: currentAccount.publicKey,
       litNodeClient,
     });
-    return txResults.map((transaction) => {
+    return txResults.map((transaction, index) => {
       if (transaction.Account === pkpXrplWallet.address) {
         if (transaction.TransactionType === 'Payment') {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">Sent</div>
@@ -237,7 +237,7 @@ export default function TransactionHistory() {
           );
         } else {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">
@@ -257,7 +257,7 @@ export default function TransactionHistory() {
       } else if (transaction.Destination === pkpXrplWallet.address) {
         if (transaction.TransactionType === 'Payment') {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">Received</div>
@@ -273,7 +273,7 @@ export default function TransactionHistory() {
           );
         } else {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">

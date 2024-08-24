@@ -1,55 +1,49 @@
-import Assets from '/assets/navBar/assets.svg';
-import NFTs from '/assets/navBar/nfts.svg';
-import Swap from '/assets/navBar/swap.svg';
-import History from '/assets/navBar/history.svg';
-import Link from 'next/link';
-import Image from 'next/image';
+import { WalletView } from '@/app/wallet/page';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
 }
 
-const NavBar = () => {
+interface NavBarProps {
+  setView: (view: WalletView) => void;
+}
+
+const NavBar: React.FC<NavBarProps> = ({ setView }) => {
   return (
     <nav className="bg-background border-t flex justify-around items-center h-16 px-4 sm:px-6 md:px-8">
-      <Link
-        href="#"
+      <button
+        onClick={() => setView('dashboard')}
         className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-        prefetch={false}
       >
         <WalletIcon className="w-6 h-6" />
         <span className="text-xs">Assets</span>
-      </Link>
-      <Link
-        href="#"
+      </button>
+      <button
+        onClick={() => setView('ntfs')}
         className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-        prefetch={false}
       >
         <LayoutGridIcon className="w-6 h-6" />
         <span className="text-xs">NFTs</span>
-      </Link>
-      <Link
-        href="#"
+      </button>
+      <button
+        onClick={() => setView('swap')}
         className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-        prefetch={false}
       >
         <RepeatIcon className="w-6 h-6" />
         <span className="text-xs">Swap</span>
-      </Link>
-      <Link
-        href="#"
+      </button>
+      <button
+        onClick={() => setView('history')}
         className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-        prefetch={false}
       >
         <ClockIcon className="w-6 h-6" />
         <span className="text-xs">History</span>
-      </Link>
+      </button>
     </nav>
   );
 };
 
 export default NavBar;
-
 
 function ClockIcon(props: IconProps) {
   return (

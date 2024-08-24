@@ -17,7 +17,7 @@ import { IRelayPKP, AuthMethod } from '@lit-protocol/types';
 import { useRouter } from 'next/navigation';
 import { configureObservableSync, syncObservable } from '@legendapp/state/sync';
 
-export default function LoginView() {
+export default function LoginPage() {
   configureObservableSync({
     persist: {
       plugin: ObservablePersistLocalStorage,
