@@ -15,7 +15,7 @@ import { observable } from '@legendapp/state';
 import { IRelayPKP, AuthMethod } from '@lit-protocol/types';
 import { configureObservableSync, syncObservable } from '@legendapp/state/sync';
 
-export default function SignUpView() {
+export default function SignUpPage() {
   configureObservableSync({
     persist: {
       plugin: ObservablePersistLocalStorage,

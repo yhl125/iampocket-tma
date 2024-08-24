@@ -1,8 +1,6 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { useEffect, useState } from 'react';
 import { litNodeClient } from '@/utils/lit';
-import { observable } from '@legendapp/state';
-import { syncObservable } from '@legendapp/state/sync';
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
   TransactionMetadata,
@@ -16,36 +14,24 @@ import {
 import { Card } from '../ui/card';
 import { truncateAddress } from '@/utils/xrpl';
 
-export default function TransactionHistory() {
-  const currentAccount$ = observable<IRelayPKP>();
-  syncObservable(currentAccount$, {
-    persist: {
-      name: 'currentAccount',
-    },
-  });
-  const sessionSigs$ = observable<SessionSigsMap>();
-  syncObservable(sessionSigs$, {
-    persist: {
-      name: 'sessionSigs',
-    },
-  });
-  const sessionSigsExpiration$ = observable<string>();
-  syncObservable(sessionSigsExpiration$, {
-    persist: {
-      name: 'sessionSigsExpiration',
-    },
-  });
+interface TransactionHistoryProps {
+  sessionSigs?: SessionSigsMap;
+  currentAccount?: IRelayPKP;
+}
+
+export default function TransactionHistory({
+  sessionSigs,
+  currentAccount,
+}: TransactionHistoryProps) {
   const [marker, setMarker] = useState<unknown | undefined>();
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
     [],
   );
   useEffect(() => {
     const fetchTransactionHistory = async () => {
-      const sessionSigs = sessionSigs$.get();
       if (!sessionSigs) {
         throw new Error('No session sigs');
       }
-      const currentAccount = currentAccount$.get();
       if (!currentAccount) {
         throw new Error('No current account');
       }
@@ -78,11 +64,9 @@ export default function TransactionHistory() {
   }, []);
 
   async function fetchTransactionHistory() {
-    const sessionSigs = sessionSigs$.get();
     if (!sessionSigs) {
       throw new Error('No session sigs');
     }
-    const currentAccount = currentAccount$.get();
     if (!currentAccount) {
       throw new Error('No current account');
     }
@@ -204,11 +188,9 @@ export default function TransactionHistory() {
   }
 
   function txResultsToComponet() {
-    const sessionSigs = sessionSigs$.get();
     if (!sessionSigs) {
       throw new Error('No session sigs');
     }
-    const currentAccount = currentAccount$.get();
     if (!currentAccount) {
       throw new Error('No current account');
     }
@@ -217,11 +199,11 @@ export default function TransactionHistory() {
       pkpPubKey: currentAccount.publicKey,
       litNodeClient,
     });
-    return txResults.map((transaction) => {
+    return txResults.map((transaction, index) => {
       if (transaction.Account === pkpXrplWallet.address) {
         if (transaction.TransactionType === 'Payment') {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">Sent</div>
@@ -237,7 +219,7 @@ export default function TransactionHistory() {
           );
         } else {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">
@@ -257,7 +239,7 @@ export default function TransactionHistory() {
       } else if (transaction.Destination === pkpXrplWallet.address) {
         if (transaction.TransactionType === 'Payment') {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">Received</div>
@@ -273,7 +255,7 @@ export default function TransactionHistory() {
           );
         } else {
           return (
-            <Card key={transaction.Hash} className="p-4">
+            <Card key={transaction.Hash || index} className="p-4">
               <div className="flex items-center space-x-2">
                 <div className="flex-1">
                   <div className="font-semibold">
