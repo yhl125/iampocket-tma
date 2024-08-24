@@ -1,8 +1,6 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { useEffect, useState } from 'react';
 import { litNodeClient } from '@/utils/lit';
-import { observable } from '@legendapp/state';
-import { syncObservable } from '@legendapp/state/sync';
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
   TransactionMetadata,
@@ -16,36 +14,24 @@ import {
 import { Card } from '../ui/card';
 import { truncateAddress } from '@/utils/xrpl';
 
-export default function TransactionHistory() {
-  const currentAccount$ = observable<IRelayPKP>();
-  syncObservable(currentAccount$, {
-    persist: {
-      name: 'currentAccount',
-    },
-  });
-  const sessionSigs$ = observable<SessionSigsMap>();
-  syncObservable(sessionSigs$, {
-    persist: {
-      name: 'sessionSigs',
-    },
-  });
-  const sessionSigsExpiration$ = observable<string>();
-  syncObservable(sessionSigsExpiration$, {
-    persist: {
-      name: 'sessionSigsExpiration',
-    },
-  });
+interface TransactionHistoryProps {
+  sessionSigs?: SessionSigsMap;
+  currentAccount?: IRelayPKP;
+}
+
+export default function TransactionHistory({
+  sessionSigs,
+  currentAccount,
+}: TransactionHistoryProps) {
   const [marker, setMarker] = useState<unknown | undefined>();
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
     [],
   );
   useEffect(() => {
     const fetchTransactionHistory = async () => {
-      const sessionSigs = sessionSigs$.get();
       if (!sessionSigs) {
         throw new Error('No session sigs');
       }
-      const currentAccount = currentAccount$.get();
       if (!currentAccount) {
         throw new Error('No current account');
       }
@@ -78,11 +64,9 @@ export default function TransactionHistory() {
   }, []);
 
   async function fetchTransactionHistory() {
-    const sessionSigs = sessionSigs$.get();
     if (!sessionSigs) {
       throw new Error('No session sigs');
     }
-    const currentAccount = currentAccount$.get();
     if (!currentAccount) {
       throw new Error('No current account');
     }
@@ -204,11 +188,9 @@ export default function TransactionHistory() {
   }
 
   function txResultsToComponet() {
-    const sessionSigs = sessionSigs$.get();
     if (!sessionSigs) {
       throw new Error('No session sigs');
     }
-    const currentAccount = currentAccount$.get();
     if (!currentAccount) {
       throw new Error('No current account');
     }
