@@ -204,3 +204,7 @@ async function getUpdatedBalance(
     }, INTERVAL_SECONDS * 1000);
   });
 }
+
+export function truncateAddress(address: string): string {
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
