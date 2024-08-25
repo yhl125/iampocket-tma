@@ -5,41 +5,61 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 interface NavBarProps {
+  view: WalletView;
   setView: (view: WalletView) => void;
 }
 
-const NavBar: React.FC<NavBarProps> = ({ setView }) => {
+const NavBar: React.FC<NavBarProps> = ({ view, setView }) => {
   return (
-    <nav className="bg-background border-t flex justify-around items-center h-16 px-4 sm:px-6 md:px-8">
-      <button
+    <nav className="bg-background border-t flex justify-around items-stretch h-16">
+      <NavItem
+        icon={WalletIcon}
+        label="Assets"
         onClick={() => setView('dashboard')}
-        className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <WalletIcon className="w-6 h-6" />
-        <span className="text-xs">Assets</span>
-      </button>
-      <button
+        isActive={view === 'dashboard'}
+      />
+      <NavItem
+        icon={LayoutGridIcon}
+        label="NFTs"
         onClick={() => setView('ntfs')}
-        className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <LayoutGridIcon className="w-6 h-6" />
-        <span className="text-xs">NFTs</span>
-      </button>
-      <button
+        isActive={view === 'ntfs'}
+      />
+      <NavItem
+        icon={RepeatIcon}
+        label="Swap"
         onClick={() => setView('swap')}
-        className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <RepeatIcon className="w-6 h-6" />
-        <span className="text-xs">Swap</span>
-      </button>
-      <button
+        isActive={view === 'swap'}
+      />
+      <NavItem
+        icon={ClockIcon}
+        label="History"
         onClick={() => setView('history')}
-        className="flex flex-col items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ClockIcon className="w-6 h-6" />
-        <span className="text-xs">History</span>
-      </button>
+        isActive={view === 'history'}
+      />
     </nav>
+  );
+};
+
+interface NavItemProps {
+  icon: React.FC<IconProps>;
+  label: string;
+  onClick: () => void;
+  isActive: boolean;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, onClick, isActive }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 flex flex-col items-center justify-center px-1 py-2 transition-colors
+        ${isActive
+          ? 'text-primary border-t-2 border-primary'
+          : 'text-muted-foreground hover:text-foreground'
+        }`}
+    >
+      <Icon className="w-6 h-6" />
+      <span className="text-xs mt-1">{label}</span>
+    </button>
   );
 };
 
