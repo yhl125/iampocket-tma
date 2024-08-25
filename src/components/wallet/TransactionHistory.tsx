@@ -17,11 +17,13 @@ import { truncateAddress } from '@/utils/xrpl';
 interface TransactionHistoryProps {
   sessionSigs?: SessionSigsMap;
   currentAccount?: IRelayPKP;
+  xrplAddress?: string;
 }
 
 export default function TransactionHistory({
   sessionSigs,
   currentAccount,
+  xrplAddress,
 }: TransactionHistoryProps) {
   const [marker, setMarker] = useState<unknown | undefined>();
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
@@ -35,18 +37,17 @@ export default function TransactionHistory({
       if (!currentAccount) {
         throw new Error('No current account');
       }
-      const pkpWallet = new PKPXrplWallet({
-        controllerSessionSigs: sessionSigs,
-        pkpPubKey: currentAccount.publicKey,
-        litNodeClient,
-      });
+      if (!xrplAddress) {
+        throw new Error('No xrpl address');
+      }
+      
       const client = new Client('wss://s.altnet.rippletest.net:51233');
       await client.connect();
 
       // Get the transaction history
       const payload: AccountTxRequest = {
         command: 'account_tx',
-        account: pkpWallet.address,
+        account: xrplAddress,
         limit: 10,
       };
 

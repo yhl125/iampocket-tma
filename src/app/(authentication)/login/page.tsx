@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import useAuthenticate from '@/hooks/useAuthenticate';
 import useSession from '@/hooks/useSession';
 import useAccounts from '@/hooks/useAccounts';
-import { ORIGIN, signInWithDiscord, signInWithGoogle } from '@/utils/lit';
+import { litNodeClient, ORIGIN, signInWithDiscord, signInWithGoogle } from '@/utils/lit';
 import Loading from '@/components/Loading';
 import LoginMethods from '@/components/login/LoginMethods';
 import AccountSelection from '@/components/authentication/AccountSelection';
@@ -16,6 +16,7 @@ import { observable } from '@legendapp/state';
 import { IRelayPKP, AuthMethod } from '@lit-protocol/types';
 import { useRouter } from 'next/navigation';
 import { configureObservableSync, syncObservable } from '@legendapp/state/sync';
+import { PKPXrplWallet } from 'pkp-xrpl';
 
 export default function LoginPage() {
   configureObservableSync({
@@ -35,6 +36,13 @@ export default function LoginPage() {
       name: 'authMethod',
     },
   });
+  const xrplAddress$ = observable<string>();
+  syncObservable(xrplAddress$, {
+    persist: {
+      name: 'xrplAddress',
+    },
+  });
+  
   const router = useRouter();
 
   const redirectUri = ORIGIN + '/login';
@@ -105,6 +113,12 @@ export default function LoginPage() {
   useEffect(() => {
     if (currentAccount && sessionSigs) {
       currentAccount$.set(currentAccount);
+      const pkpXrplWallet = new PKPXrplWallet({
+        controllerSessionSigs: sessionSigs,
+        pkpPubKey: currentAccount.publicKey,
+        litNodeClient,
+      });
+      xrplAddress$.set(pkpXrplWallet.address);
       router.replace('/wallet');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
