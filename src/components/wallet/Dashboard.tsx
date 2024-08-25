@@ -14,6 +14,15 @@ import TokenBalance from './TokenBalance';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
@@ -30,11 +39,10 @@ export default function Dashboard({
   handleLogout,
   xrplAddress,
 }: DashboardProps) {
-  const [message, setMessage] = useState<string>('Free the web!');
-  const [signature, setSignature] = useState<string>();
   const [verified, setVerified] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
+  const { toast } = useToast();
 
   /**
    * Sign a message with current PKP
@@ -121,6 +129,22 @@ export default function Dashboard({
     setLoading(false);
   }
 
+  const handleCopyButton = (text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast({
+          title: 'Copied!',
+        });
+      },
+      (err) => {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+        });
+      },
+    );
+  };
+
   return (
     // <div className="container">
     //   <div className="logout-container">
@@ -162,14 +186,25 @@ export default function Dashboard({
     <div className="max-w-md mx-auto p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Avatar>
-            <AvatarImage src="/placeholder-user.jpg" alt="Wallet Icon" />
-            <AvatarFallback>W</AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar>
+                <AvatarFallback className="border">W</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-32 min-w-[8rem]"
+              align='start'
+            >
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="justify-center"
+              >
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <span className="font-semibold">Wallet #1</span>
-          <span className="text-muted-foreground">
-            {truncateAddress(xrplAddress ?? '')}
-          </span>
         </div>
         <Badge variant="secondary">testnet</Badge>
       </div>
@@ -180,7 +215,8 @@ export default function Dashboard({
           <Button
             variant="ghost"
             size="icon"
-            className="inline-block w-4 h-4 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            className="inline-flex items-center justify-center w-8 h-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            onClick={() => handleCopyButton(xrplAddress ?? '')}
           >
             <CopyIcon className="w-4 h-4" />
             <span className="sr-only">Copy address</span>
@@ -188,7 +224,7 @@ export default function Dashboard({
         </div>
       </div>
       <div className="flex justify-center space-x-2 mb-4">
-        <Button>Faucet</Button>
+        <Button onClick={signMessageWithPKP}>Faucet</Button>
         {/* <Button>Receive</Button> */}
         <Button>Send</Button>
         <Button>Mint NFT</Button>

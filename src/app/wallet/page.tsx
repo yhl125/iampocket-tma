@@ -15,6 +15,7 @@ import useSession from '@/hooks/useSession';
 import { useLaunchParams, useInitData } from '@telegram-apps/sdk-react';
 import { useInterval } from 'usehooks-ts';
 import { useRouter } from 'next/navigation';
+import { Toaster } from '@/components/ui/toaster';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -74,7 +75,7 @@ export default function WalletPage() {
       name: 'xrplAddress',
     },
   });
-  
+
   const initDataRaw = useLaunchParams().initDataRaw || '';
   const telegramUserId = useInitData()?.user?.id.toString() || '';
 
@@ -157,6 +158,7 @@ export default function WalletPage() {
         )}
         {/* Add other views as needed */}
       </div>
+      <Toaster />
       <NavBar view={view} setView={setView} />
     </div>
   );
