@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import useAuthenticate from '@/hooks/useAuthenticate';
 import useSession from '@/hooks/useSession';
 import useAccounts from '@/hooks/useAccounts';
-import { ORIGIN, signInWithDiscord, signInWithGoogle } from '@/utils/lit';
+import { litNodeClient, ORIGIN, signInWithDiscord, signInWithGoogle } from '@/utils/lit';
 import { AuthMethodType } from '@lit-protocol/constants';
 import SignUpMethods from '@/components/signup/SignUpMethods';
 import Loading from '@/components/Loading';
@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { observable } from '@legendapp/state';
 import { IRelayPKP, AuthMethod } from '@lit-protocol/types';
 import { configureObservableSync, syncObservable } from '@legendapp/state/sync';
+import { PKPXrplWallet } from 'pkp-xrpl';
 
 export default function SignUpPage() {
   configureObservableSync({
@@ -40,7 +41,13 @@ export default function SignUpPage() {
       name: 'hasAccount',
     },
   });
-
+  const xrplAddress$ = observable<string>();
+  syncObservable(xrplAddress$, {
+    persist: {
+      name: 'xrplAddress',
+    },
+  });
+  
   const redirectUri = ORIGIN + '/signup';
   const initDataRaw = useLaunchParams().initDataRaw || '';
   const telegramUserId = useInitData()?.user?.id.toString() || '';
@@ -116,6 +123,12 @@ export default function SignUpPage() {
     if (currentAccount && sessionSigs) {
       currentAccount$.set(currentAccount);
       hasAccount$.set(true);
+      const pkpXrplWallet = new PKPXrplWallet({
+        controllerSessionSigs: sessionSigs,
+        pkpPubKey: currentAccount.publicKey,
+        litNodeClient,
+      });
+      xrplAddress$.set(pkpXrplWallet.address);
       router.replace('/wallet');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

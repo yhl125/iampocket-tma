@@ -5,6 +5,9 @@ import { litNodeClient } from '@/utils/lit';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { Session } from 'inspector';
 import Loading from '../Loading';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface TrustLineBalance {
   value: string;
@@ -107,7 +110,7 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
   }, [sessionSigs, currentAccount]);
 
   if (loading) {
-    return <Loading copy='Fetching balance...' />;
+    return <Loading copy="Fetching balance..." />;
   }
 
   if (error) {
@@ -115,19 +118,58 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">XRP Balance: {mainTokenBalance}</h2>
-      <h3 className="text-2xl font-bold">Trust Line Balances:</h3>
-      <ul className="space-y-2">
-        {trustLineBalances.map((line, index) => (
-          <li key={index}>
-            Currency: {line.currency}, Balance: {line.value}, Issuer:{' '}
-            {line.issuer}
-          </li>
-        ))}
-      </ul>
+    // <div className="space-y-4">
+    //   <h2 className="text-2xl font-bold">XRP Balance: {mainTokenBalance}</h2>
+    //   <h3 className="text-2xl font-bold">Trust Line Balances:</h3>
+    //   <ul className="space-y-2">
+    //     {trustLineBalances.map((line, index) => (
+    //       <li key={index}>
+    //         Currency: {line.currency}, Balance: {line.value}, Issuer:{' '}
+    //         {line.issuer}
+    //       </li>
+    //     ))}
+    //   </ul>
+    // </div>
+    <div className="border-t pt-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Avatar>
+            <AvatarImage src="/xrp.svg" alt="XRP Icon" />
+            <AvatarFallback>XRP</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="font-semibold">
+              XRP <CheckIcon className="inline-block w-4 h-4 text-blue-500" />
+            </div>
+            <div className="text-muted-foreground">{mainTokenBalance} XRP</div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="font-semibold">$0</div>
+          <Badge variant="destructive">0%</Badge>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default TokenBalance;
+
+function CheckIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}

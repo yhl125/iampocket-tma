@@ -64,7 +64,7 @@ export function DashboardStyle() {
   )
 }
 
-function CheckIcon(props) {
+function CheckIcon(props: any) {
   return (
     <svg
       {...props}
@@ -84,7 +84,7 @@ function CheckIcon(props) {
 }
 
 
-function CopyIcon(props) {
+function CopyIcon(props: any) {
   return (
     <svg
       {...props}

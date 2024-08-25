@@ -68,7 +68,13 @@ export default function WalletPage() {
       name: 'authMethod',
     },
   });
-
+  const xrplAddress$ = observable<string>();
+  syncObservable(xrplAddress$, {
+    persist: {
+      name: 'xrplAddress',
+    },
+  });
+  
   const initDataRaw = useLaunchParams().initDataRaw || '';
   const telegramUserId = useInitData()?.user?.id.toString() || '';
 
@@ -139,12 +145,14 @@ export default function WalletPage() {
             currentAccount={currentAccount$.get()}
             updateSessionWhenExpires={updateSessionWhenExpires}
             handleLogout={handleLogout}
+            xrplAddress={xrplAddress$.get()}
           />
         )}
         {view === 'history' && (
           <TransactionHistory
             sessionSigs={sessionSigs$.get()}
             currentAccount={currentAccount$.get()}
+            xrplAddress={xrplAddress$.get()}
           />
         )}
         {/* Add other views as needed */}
