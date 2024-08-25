@@ -16,6 +16,7 @@ import { useLaunchParams, useInitData } from '@telegram-apps/sdk-react';
 import { useInterval } from 'usehooks-ts';
 import { useRouter } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
+import { XrplNetwork } from '@/utils/xrpl';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -73,6 +74,12 @@ export default function WalletPage() {
   syncObservable(xrplAddress$, {
     persist: {
       name: 'xrplAddress',
+    },
+  });
+  const xrplNetwork$ = observable<XrplNetwork>('testnet');
+  syncObservable(xrplNetwork$, {
+    persist: {
+      name: 'xrplNetwork',
     },
   });
 
@@ -147,6 +154,7 @@ export default function WalletPage() {
             updateSessionWhenExpires={updateSessionWhenExpires}
             handleLogout={handleLogout}
             xrplAddress={xrplAddress$.get()}
+            xrplNetwork={xrplNetwork$.get()}
           />
         )}
         {view === 'history' && (
@@ -154,6 +162,7 @@ export default function WalletPage() {
             sessionSigs={sessionSigs$.get()}
             currentAccount={currentAccount$.get()}
             xrplAddress={xrplAddress$.get()}
+            xrplNetwork={xrplNetwork$.get()}
           />
         )}
         {/* Add other views as needed */}

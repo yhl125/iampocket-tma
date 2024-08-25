@@ -12,18 +12,20 @@ import {
   convertHexToString,
 } from 'xrpl';
 import { Card } from '../ui/card';
-import { truncateAddress } from '@/utils/xrpl';
+import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
 
 interface TransactionHistoryProps {
   sessionSigs?: SessionSigsMap;
   currentAccount?: IRelayPKP;
   xrplAddress?: string;
+  xrplNetwork: XrplNetwork;
 }
 
 export default function TransactionHistory({
   sessionSigs,
   currentAccount,
   xrplAddress,
+  xrplNetwork,
 }: TransactionHistoryProps) {
   const [marker, setMarker] = useState<unknown | undefined>();
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
@@ -41,7 +43,7 @@ export default function TransactionHistory({
         throw new Error('No xrpl address');
       }
       
-      const client = new Client('wss://s.altnet.rippletest.net:51233');
+      const client = getXrplCilent(xrplNetwork);
       await client.connect();
 
       // Get the transaction history

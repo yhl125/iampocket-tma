@@ -1,5 +1,13 @@
-import { Client, FundingOptions, XRPLFaucetError } from 'xrpl';
+import { PKPXrplWallet } from 'pkp-xrpl';
+import {
+  Client,
+  convertStringToHex,
+  FundingOptions,
+  XRPLFaucetError,
+} from 'xrpl';
 import { FaucetRequestBody } from 'xrpl/dist/npm/Wallet/fundWallet';
+import { iampocketRelayServer, litNodeClient } from './lit';
+import { SessionSigsMap, IRelayPKP } from '@lit-protocol/types';
 
 // Interval to check an account balance
 const INTERVAL_SECONDS = 1;
@@ -16,12 +24,27 @@ export interface FaucetWallet {
   balance: number;
 }
 
+export type XrplNetwork = 'mainnet' | 'testnet' | 'devnet';
+
+export function getXrplCilent(network: XrplNetwork): Client {
+  switch (network) {
+    case 'mainnet':
+      return new Client('wss://s1.ripple.com');
+    case 'testnet':
+      return new Client('wss://s.altnet.rippletest.net:51233');
+    case 'devnet':
+      return new Client('wss://s.devnet.rippletest.net:51233');
+    default:
+      throw new Error('Invalid network');
+  }
+}
+
 export async function requestFunding(
   options: FundingOptions,
   client: Client,
   startingBalance: number,
   classicAddressToFund: string,
-  postBody: FaucetRequestBody
+  postBody: FaucetRequestBody,
 ): Promise<{
   classicAddressToFund: string;
   balance: number;
@@ -49,7 +72,7 @@ export async function requestFunding(
       client,
       classicAddress,
       classicAddressToFund,
-      startingBalance
+      startingBalance,
     );
   }
   return processError(response, body);
@@ -82,7 +105,7 @@ export function getFaucetHost(client: Client): FaucetNetwork | undefined {
 
   if (connectionUrl.includes('sidechain-net2')) {
     throw new Error(
-      'Cannot fund an account on an issuing chain. Accounts must be created via the bridge.'
+      'Cannot fund an account on an issuing chain. Accounts must be created via the bridge.',
     );
   }
 
@@ -111,14 +134,14 @@ async function processSuccessfulResponse(
   client: Client,
   classicAddress: string | undefined,
   classicAddressToFund: string,
-  startingBalance: number
+  startingBalance: number,
 ): Promise<{
   classicAddressToFund: string;
   balance: number;
 }> {
   if (!classicAddress) {
     return Promise.reject(
-      new XRPLFaucetError(`The faucet account is undefined`)
+      new XRPLFaucetError(`The faucet account is undefined`),
     );
   }
   try {
@@ -126,7 +149,7 @@ async function processSuccessfulResponse(
     const updatedBalance = await getUpdatedBalance(
       client,
       classicAddress,
-      startingBalance
+      startingBalance,
     );
 
     if (updatedBalance > startingBalance) {
@@ -138,7 +161,7 @@ async function processSuccessfulResponse(
     throw new XRPLFaucetError(
       `Unable to fund address with faucet after waiting ${
         INTERVAL_SECONDS * MAX_ATTEMPTS
-      } seconds`
+      } seconds`,
     );
   } catch (err) {
     if (err instanceof Error) {
@@ -155,8 +178,8 @@ async function processError(response: Response, body: any): Promise<never> {
         body: body || {},
         contentType: response.headers.get('Content-Type'),
         statusCode: response.status,
-      })}`
-    )
+      })}`,
+    ),
   );
 }
 
@@ -171,7 +194,7 @@ async function processError(response: Response, body: any): Promise<never> {
 async function getUpdatedBalance(
   client: Client,
   address: string,
-  originalBalance: number
+  originalBalance: number,
 ): Promise<number> {
   return new Promise((resolve, reject) => {
     let attempts = MAX_ATTEMPTS;
@@ -195,8 +218,8 @@ async function getUpdatedBalance(
         if (err instanceof Error) {
           reject(
             new XRPLFaucetError(
-              `Unable to check if the address ${address} balance has increased. Error: ${err.message}`
-            )
+              `Unable to check if the address ${address} balance has increased. Error: ${err.message}`,
+            ),
           );
         }
         reject(err);
@@ -207,4 +230,64 @@ async function getUpdatedBalance(
 
 export function truncateAddress(address: string): string {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
+
+export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
+  const client = getXrplCilent(network);
+  await client.connect();
+  const nftUrls = [
+    `${iampocketRelayServer}/nft/maru`,
+    `${iampocketRelayServer}/nft/maru-sleeping`,
+    `${iampocketRelayServer}/nft/maru-glasses`,
+  ];
+  const prepared = await client.autofill({
+    TransactionType: 'NFTokenMint',
+    Account: pkpWallet.classicAddress,
+    NFTokenTaxon: 0,
+    // get random URI from nftUrls
+    URI: convertStringToHex(
+      nftUrls[Math.floor(Math.random() * nftUrls.length)],
+    ),
+  });
+  const signed = await pkpWallet.sign(prepared);
+  const tx = await client.submitAndWait(signed.tx_blob);
+  await client.disconnect();
+  console.log('Minted NFT:', tx);
+  return tx;
+}
+
+export async function xrplFaucet(address: string, network: XrplNetwork) {
+  const client = getXrplCilent(network);
+  await client.connect();
+  const { classicAddressToFund, balance } = await requestFunding(
+    {},
+    client,
+    0,
+    address,
+    {
+      destination: address,
+      userAgent: 'xrpl.js',
+    },
+  );
+  await client.disconnect();
+  return { classicAddressToFund, balance };
+}
+
+export function getPkpXrplWallet(
+  sessionSigs?: SessionSigsMap,
+  currentAccount?: IRelayPKP,
+) {
+  if (!sessionSigs) {
+    throw new Error('No session sigs');
+  }
+  if (!currentAccount) {
+    throw new Error('No current account');
+  }
+
+  const pkpWallet = new PKPXrplWallet({
+    controllerSessionSigs: sessionSigs,
+    pkpPubKey: currentAccount.publicKey,
+    litNodeClient,
+  });
+  return pkpWallet;
 }
