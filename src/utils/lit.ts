@@ -28,7 +28,7 @@ import { ethers } from 'ethers';
 const LIT_NETWORK = LitNetwork.DatilTest;
 const LIT_RELAYER_URL = `https://${LIT_NETWORK}-relayer.getlit.dev/register-payer`;
 const LIT_RELAYER_API_KEY = 'test-api-key';
-const iampocketRelayServer = 'https://iampocket-relay-server.vercel.app';
+export const iampocketRelayServer = 'https://iampocket-relay-server.vercel.app';
 
 export const DOMAIN = process.env.NEXT_PUBLIC_PROD_URL || 'localhost';
 export const ORIGIN =
