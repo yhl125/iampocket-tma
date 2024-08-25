@@ -8,6 +8,7 @@ import Loading from '../Loading';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 
 interface TrustLineBalance {
   value: string;
@@ -22,9 +23,10 @@ interface TrustLineBalance {
 
 interface XRPBalanceProps {
   xrplAddress?: string;
+  xrplNetwork: XrplNetwork;
 }
 
-const TokenBalance = ({ xrplAddress }: XRPBalanceProps) => {
+const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
   const [mainTokenBalance, setMainTokenBalance] = useState('0');
   const [trustLineBalances, setTrustLineBalances] = useState<
     TrustLineBalance[]
@@ -39,7 +41,7 @@ const TokenBalance = ({ xrplAddress }: XRPBalanceProps) => {
         if (!xrplAddress) {
           throw new Error('No xrpl address');
         }
-        const client = new Client('wss://s.altnet.rippletest.net:51233');
+        const client = getXrplCilent(xrplNetwork);
         await client.connect();
 
         const balances = await client.getBalances(xrplAddress);
@@ -95,7 +97,7 @@ const TokenBalance = ({ xrplAddress }: XRPBalanceProps) => {
       setLoading(false);
     }
     fetchBalance();
-  }, [xrplAddress]);
+  }, [xrplAddress, xrplNetwork]);
 
   if (loading) {
     return <div>Fetching Balance..</div>;

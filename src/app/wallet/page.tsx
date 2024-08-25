@@ -17,6 +17,7 @@ import { useInterval } from 'usehooks-ts';
 import { useRouter } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { XrplNetwork } from '@/utils/xrpl';
+import { NFTList } from '@/components/wallet/NFTLIst';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -91,7 +92,7 @@ export default function WalletPage() {
     updateTelegramSession,
     error: sessionError,
   } = useSession();
-  // if session sigs are expired, re-init session
+
   useInterval(async () => {
     await updateSessionWhenExpires();
     if (sessionError && sessionError.status === 500) {
@@ -141,34 +142,48 @@ export default function WalletPage() {
         fontBody.variable,
       )}
     >
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {sessionError && (
           <div className="alert alert--error">
             <p>{sessionError.message}</p>
           </div>
         )}
-        {view === 'dashboard' && (
-          <Dashboard
-            sessionSigs={sessionSigs$.get()}
-            currentAccount={currentAccount$.get()}
-            updateSessionWhenExpires={updateSessionWhenExpires}
-            handleLogout={handleLogout}
-            xrplAddress={xrplAddress$.get()}
-            xrplNetwork={xrplNetwork$.get()}
-          />
-        )}
-        {view === 'history' && (
-          <TransactionHistory
-            sessionSigs={sessionSigs$.get()}
-            currentAccount={currentAccount$.get()}
-            xrplAddress={xrplAddress$.get()}
-            xrplNetwork={xrplNetwork$.get()}
-          />
-        )}
-        {/* Add other views as needed */}
+        <div className="flex-1 overflow-y-auto pb-16">
+          {' '}
+          {/* Added pb-16 for navbar space */}
+          {view === 'dashboard' && (
+            <Dashboard
+              sessionSigs={sessionSigs$.get()}
+              currentAccount={currentAccount$.get()}
+              updateSessionWhenExpires={updateSessionWhenExpires}
+              handleLogout={handleLogout}
+              xrplAddress={xrplAddress$.get()}
+              xrplNetwork={xrplNetwork$.get()}
+            />
+          )}
+          {view === 'ntfs' && (
+            <NFTList
+              sessionSigs={sessionSigs$.get()}
+              currentAccount={currentAccount$.get()}
+              xrplAddress={xrplAddress$.get()}
+              xrplNetwork={xrplNetwork$.get()}
+            />
+          )}
+          {view === 'history' && (
+            <TransactionHistory
+              sessionSigs={sessionSigs$.get()}
+              currentAccount={currentAccount$.get()}
+              xrplAddress={xrplAddress$.get()}
+              xrplNetwork={xrplNetwork$.get()}
+            />
+          )}
+          {/* Add other views as needed */}
+        </div>
       </div>
       <Toaster />
-      <NavBar view={view} setView={setView} />
+      <div className="fixed bottom-0 left-0 right-0 bg-background">
+        <NavBar view={view} setView={setView} />
+      </div>
     </div>
   );
 }
