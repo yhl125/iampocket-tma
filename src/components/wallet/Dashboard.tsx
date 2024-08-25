@@ -111,7 +111,7 @@ export default function Dashboard({
         </Button>
         <Button>Mint Token</Button>
       </div>
-      <TokenBalance xrplAddress={xrplAddress} />
+      <TokenBalance xrplAddress={xrplAddress} xrplNetwork={xrplNetwork} />
     </div>
   );
 }

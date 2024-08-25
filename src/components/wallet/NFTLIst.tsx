@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AccountNFToken, AccountNFTsRequest, Client } from 'xrpl';
-import { XrplNetwork } from '@/utils/xrpl';
+import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ const NFTCard: React.FC<{ nft: NFTData }> = ({ nft }) => {
       <CardContent className="p-0">
         <div className="relative w-full pb-[100%]">
           {nft.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={URL}
               alt={nft.name || 'NFT'}
@@ -70,7 +71,7 @@ export const NFTList: React.FC<NFTListProps> = ({
       setLoading(true);
 
       try {
-        const client = new Client('wss://s.altnet.rippletest.net:51233');
+        const client = getXrplCilent(xrplNetwork);
         await client.connect();
 
         const response = await client.request<AccountNFTsRequest>({
@@ -115,7 +116,7 @@ export const NFTList: React.FC<NFTListProps> = ({
     }
 
     fetchNFTs();
-  }, [xrplAddress]);
+  }, [xrplAddress, xrplNetwork]);
 
   const filteredNfts = useMemo(() => {
     if (!searchTerm) {
