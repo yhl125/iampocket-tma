@@ -15,6 +15,14 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
@@ -178,10 +186,24 @@ export default function Dashboard({
     <div className="max-w-md mx-auto p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <Avatar>
-            <AvatarImage src="/placeholder-user.jpg" alt="Wallet Icon" />
-            <AvatarFallback className="border">W</AvatarFallback>
-          </Avatar>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar>
+                <AvatarFallback className="border">W</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-32 min-w-[8rem]"
+              align='start'
+            >
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="justify-center"
+              >
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <span className="font-semibold">Wallet #1</span>
         </div>
         <Badge variant="secondary">testnet</Badge>
@@ -202,7 +224,7 @@ export default function Dashboard({
         </div>
       </div>
       <div className="flex justify-center space-x-2 mb-4">
-        <Button>Faucet</Button>
+        <Button onClick={signMessageWithPKP}>Faucet</Button>
         {/* <Button>Receive</Button> */}
         <Button>Send</Button>
         <Button>Mint NFT</Button>
