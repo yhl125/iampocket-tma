@@ -107,7 +107,7 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
   }, [sessionSigs, currentAccount]);
 
   if (loading) {
-    return <Loading copy='Fetching balance...' />;
+    return <div>Fetching Balance..</div>;
   }
 
   if (error) {
