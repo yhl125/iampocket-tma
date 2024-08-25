@@ -6,7 +6,8 @@ import {
   XRPLFaucetError,
 } from 'xrpl';
 import { FaucetRequestBody } from 'xrpl/dist/npm/Wallet/fundWallet';
-import { iampocketRelayServer } from './lit';
+import { iampocketRelayServer, litNodeClient } from './lit';
+import { SessionSigsMap, IRelayPKP } from '@lit-protocol/types';
 
 // Interval to check an account balance
 const INTERVAL_SECONDS = 1;
@@ -25,7 +26,7 @@ export interface FaucetWallet {
 
 export type XrplNetwork = 'mainnet' | 'testnet' | 'devnet';
 
-export function getCilent(network: XrplNetwork): Client {
+export function getXrplCilent(network: XrplNetwork): Client {
   switch (network) {
     case 'mainnet':
       return new Client('wss://s1.ripple.com');
@@ -232,7 +233,7 @@ export function truncateAddress(address: string): string {
 }
 
 export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
-  const client = getCilent(network);
+  const client = getXrplCilent(network);
   await client.connect();
   const nftUrls = [
     `${iampocketRelayServer}/nft/maru`,
@@ -251,11 +252,12 @@ export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
   const signed = await pkpWallet.sign(prepared);
   const tx = await client.submitAndWait(signed.tx_blob);
   await client.disconnect();
+  console.log('Minted NFT:', tx);
   return tx;
 }
 
 export async function xrplFaucet(address: string, network: XrplNetwork) {
-  const client = getCilent(network);
+  const client = getXrplCilent(network);
   await client.connect();
   const { classicAddressToFund, balance } = await requestFunding(
     {},
@@ -269,4 +271,23 @@ export async function xrplFaucet(address: string, network: XrplNetwork) {
   );
   await client.disconnect();
   return { classicAddressToFund, balance };
+}
+
+export function getPkpXrplWallet(
+  sessionSigs?: SessionSigsMap,
+  currentAccount?: IRelayPKP,
+) {
+  if (!sessionSigs) {
+    throw new Error('No session sigs');
+  }
+  if (!currentAccount) {
+    throw new Error('No current account');
+  }
+
+  const pkpWallet = new PKPXrplWallet({
+    controllerSessionSigs: sessionSigs,
+    pkpPubKey: currentAccount.publicKey,
+    litNodeClient,
+  });
+  return pkpWallet;
 }
