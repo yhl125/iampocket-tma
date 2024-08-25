@@ -111,7 +111,7 @@ export default function Dashboard({
         </Button>
         <Button>Mint Token</Button>
       </div>
-      <TokenBalance sessionSigs={sessionSigs} currentAccount={currentAccount} />
+      <TokenBalance xrplAddress={xrplAddress} />
     </div>
   );
 }

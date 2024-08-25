@@ -21,11 +21,10 @@ interface TrustLineBalance {
 }
 
 interface XRPBalanceProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
+  xrplAddress?: string;
 }
 
-const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
+const TokenBalance = ({ xrplAddress }: XRPBalanceProps) => {
   const [mainTokenBalance, setMainTokenBalance] = useState('0');
   const [trustLineBalances, setTrustLineBalances] = useState<
     TrustLineBalance[]
@@ -37,24 +36,13 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
     async function fetchBalance() {
       setLoading(true);
       try {
-        if (!sessionSigs) {
-          throw new Error('No session sigs');
+        if (!xrplAddress) {
+          throw new Error('No xrpl address');
         }
-        if (!currentAccount) {
-          throw new Error('No current account');
-        }
-
-        const pkpWallet = new PKPXrplWallet({
-          controllerSessionSigs: sessionSigs,
-          pkpPubKey: currentAccount.publicKey,
-          litNodeClient,
-        });
-        await pkpWallet.init();
         const client = new Client('wss://s.altnet.rippletest.net:51233');
         await client.connect();
-        const address = pkpWallet.classicAddress;
 
-        const balances = await client.getBalances(address);
+        const balances = await client.getBalances(xrplAddress);
         const mainTokenBalance = balances?.find(
           (balance) => balance.issuer === undefined,
         );
@@ -64,7 +52,7 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
 
         const accountLines = await client.request({
           command: 'account_lines',
-          account: address,
+          account: xrplAddress,
         });
 
         if (accountLines?.result?.lines) {
@@ -107,7 +95,7 @@ const TokenBalance = ({ sessionSigs, currentAccount }: XRPBalanceProps) => {
       setLoading(false);
     }
     fetchBalance();
-  }, [sessionSigs, currentAccount]);
+  }, [xrplAddress]);
 
   if (loading) {
     return <div>Fetching Balance..</div>;
