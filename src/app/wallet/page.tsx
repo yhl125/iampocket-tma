@@ -157,7 +157,7 @@ export default function WalletPage() {
         )}
         {/* Add other views as needed */}
       </div>
-      <NavBar setView={setView} />
+      <NavBar view={view} setView={setView} />
     </div>
   );
 }
