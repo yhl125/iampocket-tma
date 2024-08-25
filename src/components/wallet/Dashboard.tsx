@@ -14,6 +14,7 @@ import TokenBalance from './TokenBalance';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
@@ -30,11 +31,10 @@ export default function Dashboard({
   handleLogout,
   xrplAddress,
 }: DashboardProps) {
-  const [message, setMessage] = useState<string>('Free the web!');
-  const [signature, setSignature] = useState<string>();
   const [verified, setVerified] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
+  const { toast } = useToast();
 
   /**
    * Sign a message with current PKP
@@ -121,6 +121,22 @@ export default function Dashboard({
     setLoading(false);
   }
 
+  const handleCopyButton = (text: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast({
+          title: 'Copied!',
+        });
+      },
+      (err) => {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+        });
+      },
+    );
+  };
+
   return (
     // <div className="container">
     //   <div className="logout-container">
@@ -164,12 +180,9 @@ export default function Dashboard({
         <div className="flex items-center space-x-2">
           <Avatar>
             <AvatarImage src="/placeholder-user.jpg" alt="Wallet Icon" />
-            <AvatarFallback>W</AvatarFallback>
+            <AvatarFallback className="border">W</AvatarFallback>
           </Avatar>
           <span className="font-semibold">Wallet #1</span>
-          <span className="text-muted-foreground">
-            {truncateAddress(xrplAddress ?? '')}
-          </span>
         </div>
         <Badge variant="secondary">testnet</Badge>
       </div>
@@ -180,7 +193,8 @@ export default function Dashboard({
           <Button
             variant="ghost"
             size="icon"
-            className="inline-block w-4 h-4 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            className="inline-flex items-center justify-center w-8 h-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            onClick={() => handleCopyButton(xrplAddress ?? '')}
           >
             <CopyIcon className="w-4 h-4" />
             <span className="sr-only">Copy address</span>
