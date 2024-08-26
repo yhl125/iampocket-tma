@@ -197,7 +197,7 @@ async function processError(response: Response, body: any): Promise<never> {
  * @param originalBalance - The initial balance before the funding.
  * @returns A Promise boolean.
  */
-async function getUpdatedBalance(
+export async function getUpdatedBalance(
   client: Client,
   address: string,
   originalBalance: number,

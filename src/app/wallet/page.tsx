@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { XrplNetwork } from '@/utils/xrpl';
 import { NFTList } from '@/components/wallet/NFTLIst';
+import { Swap } from '@/components/wallet/Swap';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -149,8 +150,6 @@ export default function WalletPage() {
           </div>
         )}
         <div className="flex-1 overflow-y-auto pb-16">
-          {' '}
-          {/* Added pb-16 for navbar space */}
           {view === 'dashboard' && (
             <Dashboard
               sessionSigs={sessionSigs$.get()}
@@ -169,6 +168,14 @@ export default function WalletPage() {
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
+          {view === 'swap' && (
+            <Swap
+              sessionSigs={sessionSigs$.get()}
+              currentAccount={currentAccount$.get()}
+              xrplAddress={xrplAddress$.get()}
+              xrplNetwork={xrplNetwork$.get()}
+            />
+          )}
           {view === 'history' && (
             <TransactionHistory
               sessionSigs={sessionSigs$.get()}
@@ -177,7 +184,6 @@ export default function WalletPage() {
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
-          {/* Add other views as needed */}
         </div>
       </div>
       <Toaster />
