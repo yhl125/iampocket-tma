@@ -25,7 +25,7 @@ import {
 import { LitAbility, LitPKPResource } from '@lit-protocol/auth-helpers';
 import { ethers } from 'ethers';
 
-const LIT_NETWORK = LitNetwork.DatilTest;
+const LIT_NETWORK = LitNetwork.Datil;
 const LIT_RELAYER_URL = `https://${LIT_NETWORK}-relayer.getlit.dev/register-payer`;
 const LIT_RELAYER_API_KEY = 'test-api-key';
 export const iampocketRelayServer = 'https://iampocket-relay-server.vercel.app';
