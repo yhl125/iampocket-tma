@@ -1,7 +1,6 @@
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
-  AccountSetAsfFlags,
-  AccountSetTfFlags,
+  Amount,
   Client,
   convertStringToHex,
   FundingOptions,
@@ -300,8 +299,8 @@ export function getPkpXrplWallet(
 
 export async function swap(
   pkpWallet: PKPXrplWallet,
-  weWant: { currency: string; issuer: string; value: string },
-  weSpend: { currency: string; value: string },
+  weWant: { currency: string; issuer?: string; value: string },
+  weSpend: { currency: string; issuer?: string; value: string },
   network: XrplNetwork,
 ) {
   const client = getXrplCilent(network);
@@ -340,13 +339,33 @@ export async function swap(
       }
     }
   }
+  let takerPays: Amount;
+  if (!weWant.issuer) {
+    takerPays = weWant.value;
+  } else {
+    takerPays = {
+      currency: weWant.currency,
+      issuer: weWant.issuer,
+      value: weWant.value,
+    };
+  }
+  let takerGets: Amount;
+  if (!weSpend.issuer) {
+    takerGets = weSpend.value;
+  } else {
+    takerGets = {
+      currency: weSpend.currency,
+      issuer: weSpend.issuer,
+      value: weSpend.value,
+    };
+  }
 
   // Send OfferCreate transaction
   const offerCreateTx: OfferCreate = {
     TransactionType: 'OfferCreate',
     Account: pkpWallet.address,
-    TakerPays: weWant,
-    TakerGets: weSpend.value,
+    TakerPays: takerPays,
+    TakerGets: takerGets,
   };
 
   const prepared = await client.autofill(offerCreateTx);

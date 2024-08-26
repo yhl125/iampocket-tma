@@ -11,7 +11,7 @@ import {
   XrplNetwork,
 } from '@/utils/xrpl';
 import { Badge } from '@/components/ui/badge';
-import { Client } from 'xrpl';
+import { xrpToDrops } from 'xrpl';
 
 interface SwapProps {
   sessionSigs?: SessionSigsMap;
@@ -29,7 +29,7 @@ export const Swap = ({
   const [payAmount, setPayAmount] = useState('0');
   const [receiveAmount, setReceiveAmount] = useState('0');
   const [payCurrency, setPayCurrency] = useState('XRP');
-  const [receiveCurrency, setReceiveCurrency] = useState('TEST');
+  const [receiveCurrency, setReceiveCurrency] = useState('TST');
   const [xrpBalance, setXrpBalance] = useState('0');
   const [testBalance, setTestBalance] = useState('0');
   const [isLoading, setIsLoading] = useState(false);
@@ -72,22 +72,22 @@ export const Swap = ({
 
       const originXrplBalance = await client.getXrpBalance(xrplAddress);
 
-      const originTestBalance = await client.getBalances(xrplAddress);
+      // const originTestBalance = await client.getBalances(xrplAddress);
 
       const weWant =
         payCurrency === 'XRP'
           ? {
-              currency: 'TEST',
-              issuer: originTestBalance.issuer,
+              currency: 'TST',
+              issuer: 'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
               value: receiveAmount,
             }
-          : { currency: 'XRP', value: receiveAmount };
+          : { currency: 'XRP', value: xrpToDrops(receiveAmount) };
       const weSpend =
         payCurrency === 'XRP'
-          ? { currency: 'XRP', value: payAmount }
+          ? { currency: 'XRP', value: xrpToDrops(payAmount) }
           : {
-              currency: 'TEST',
-              issuer: originTestBalance.issuer,
+              currency: 'TST',
+              issuer: 'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
               value: payAmount,
             };
 
