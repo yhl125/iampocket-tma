@@ -18,7 +18,7 @@ export default function CreateAccount({ error }: CreateAccountProp) {
           There doesn&apos;t seem to be a Lit wallet associated with your
           credentials. Create one today.
         </p>
-        <Link href="/">
+        <Link href="/signup">
           <Cell subtitle="Sign up page">signup</Cell>
         </Link>
       </div>
