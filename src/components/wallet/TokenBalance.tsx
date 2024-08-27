@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Client, AccountLinesTrustline } from 'xrpl';
-import { PKPXrplWallet } from 'pkp-xrpl';
-import { litNodeClient } from '@/utils/lit';
-import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
-import Loading from '../Loading';
+import { AccountLinesTrustline } from 'xrpl';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
@@ -133,38 +129,55 @@ const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
   }
 
   return (
-    // <div className="space-y-4">
-    //   <h2 className="text-2xl font-bold">XRP Balance: {mainTokenBalance}</h2>
-    //   <h3 className="text-2xl font-bold">Trust Line Balances:</h3>
-    //   <ul className="space-y-2">
-    //     {trustLineBalances.map((line, index) => (
-    //       <li key={index}>
-    //         Currency: {line.currency}, Balance: {line.value}, Issuer:{' '}
-    //         {line.issuer}
-    //       </li>
-    //     ))}
-    //   </ul>
-    // </div>
-    <div className="border-t pt-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Avatar>
-            <AvatarImage src="/xrp.svg" alt="XRP Icon" />
-            <AvatarFallback>XRP</AvatarFallback>
-          </Avatar>
-          <div>
-            <div className="font-semibold">
-              XRP <CheckIcon className="inline-block w-4 h-4 text-blue-500" />
+    <>
+      <div className="border-y py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Avatar>
+              <AvatarImage src="/xrp.svg" alt="XRP Icon" />
+              <AvatarFallback>XRP</AvatarFallback>
+            </Avatar>
+            <div>
+              <div className="font-semibold">
+                XRP <CheckIcon className="inline-block w-4 h-4 text-blue-500" />
+              </div>
+              <div className="text-muted-foreground">
+                {mainTokenBalance} XRP
+              </div>
             </div>
-            <div className="text-muted-foreground">{mainTokenBalance} XRP</div>
+          </div>
+          <div className="text-right">
+            <div className="font-semibold">$0</div>
+            <Badge variant="destructive">0%</Badge>
           </div>
         </div>
-        <div className="text-right">
-          <div className="font-semibold">$0</div>
-          <Badge variant="destructive">0%</Badge>
-        </div>
       </div>
-    </div>
+      <div className="border-y py-4">
+        {trustLineBalances.map((line, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Avatar>
+                <AvatarFallback className="border-2">
+                  {line.currency}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-semibold">
+                  {line.currency}
+                </div>
+                <div className="text-muted-foreground">
+                  {line.value} {line.currency}
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="font-semibold">$0</div>
+              <Badge variant="destructive">0%</Badge>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
