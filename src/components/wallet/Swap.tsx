@@ -118,30 +118,28 @@ export const Swap = ({
     setPayCurrency(receiveCurrency);
     setReceiveCurrency(payCurrency);
     setPayAmount(receiveAmount);
-    
   };
 
   function calculateReceiveAmount(payAmount: string, payCurrency: string) {
     if (payCurrency === 'XRP') {
       return (
-        Math.floor(Number(payAmount) / 10 / 1.15 * 1000) / 1000
+        Math.floor((Number(payAmount) / 10 / 1.15) * 1000) / 1000
       ).toString();
     } else {
       return (
-        Math.floor(Number(payAmount) * 10 / 1.15 * 1000) / 1000
+        Math.floor(((Number(payAmount) * 10) / 1.15) * 1000) / 1000
       ).toString();
     }
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
+    <div className="px-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <span className="text-2xl font-bold mb-4 text-gray-800">Swap</span>
         </div>
-        <Badge variant="secondary">{xrplNetwork}</Badge>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-md mx-auto ">
         <div>
           <label className="text-sm text-gray-400">You Pay</label>
           <div className="flex items-center space-x-2 mt-1">
@@ -149,7 +147,9 @@ export const Swap = ({
               type="number"
               onChange={(e) => {
                 setPayAmount(e.target.value);
-                setReceiveAmount(calculateReceiveAmount(e.target.value, payCurrency));
+                setReceiveAmount(
+                  calculateReceiveAmount(e.target.value, payCurrency),
+                );
               }}
               placeholder="0"
               value={payAmount}
