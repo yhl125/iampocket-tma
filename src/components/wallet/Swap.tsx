@@ -11,13 +11,23 @@ import {
   XrplNetwork,
 } from '@/utils/xrpl';
 import { Badge } from '@/components/ui/badge';
-import { xrpToDrops } from 'xrpl';
+import { AccountLinesTrustline, xrpToDrops } from 'xrpl';
 
 interface SwapProps {
   sessionSigs?: SessionSigsMap;
   currentAccount?: IRelayPKP;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
+}
+
+interface TrustLineBalance {
+  value: string;
+  currency: string;
+  issuer: string;
+  trustlineDetails?: {
+    limit: number;
+    noRipple: boolean;
+  };
 }
 
 export const Swap = ({
@@ -40,6 +50,19 @@ export const Swap = ({
     }
   }, [xrplAddress]);
 
+  const getTestTokenBalance = async (client: any, address: string): Promise<string> => {
+    try {
+      const balances = await client.getBalances(address);
+      const testTokenBalance = balances.find(
+        (balance: any) => balance.currency === 'TST' && balance.issuer === 'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd'
+      );
+      return testTokenBalance ? testTokenBalance.value : '0';
+    } catch (error) {
+      console.error('Error fetching test token balance:', error);
+      return '0';
+    }
+  };
+
   const fetchBalances = async () => {
     if (!xrplAddress) return;
 
@@ -50,9 +73,8 @@ export const Swap = ({
       const xrpBal = await client.getXrpBalance(xrplAddress);
       setXrpBalance(xrpBal.toString());
 
-      {
-        /*getTestTokenBalance*/
-      }
+      const testBal = await getTestTokenBalance(client, xrplAddress);
+      setTestBalance(testBal);
 
       await client.disconnect();
     } catch (err) {
@@ -70,9 +92,52 @@ export const Swap = ({
       await client.connect();
       const pkpXrplWallet = getPkpXrplWallet(sessionSigs, currentAccount);
 
-      const originXrplBalance = await client.getXrpBalance(xrplAddress);
+      const balances = await client.getBalances(xrplAddress);
+      const mainTokenBalance = balances?.find(
+        (balance) => balance.issuer === undefined,
+      );
+      let trustLineBalances = balances?.filter(
+        (balance) => balance.issuer !== undefined,
+      ) as TrustLineBalance[];
 
-      // const originTestBalance = await client.getBalances(xrplAddress);
+      const accountLines = await client.request({
+        command: 'account_lines',
+        account: xrplAddress,
+      });
+
+      if (accountLines?.result?.lines) {
+        trustLineBalances = trustLineBalances
+          .map((trustlineBalance) => {
+            const trustlineDetails = accountLines.result.lines.find(
+              (line: AccountLinesTrustline) =>
+                line.currency === trustlineBalance.currency &&
+                line.account === trustlineBalance.issuer,
+            );
+
+            return {
+              ...trustlineBalance,
+              trustlineDetails:
+                trustlineDetails && Number(trustlineDetails.limit)
+                  ? {
+                      limit: Number(trustlineDetails.limit),
+                      noRipple: trustlineDetails.no_ripple === true,
+                    }
+                  : undefined,
+            };
+          })
+          .filter(
+            (trustlineBalance) =>
+              trustlineBalance.trustlineDetails ||
+              trustlineBalance.value !== '0',
+          );
+      }
+
+      if (mainTokenBalance) {
+        setXrpBalance(mainTokenBalance.value);
+      }
+      if (trustLineBalances) {
+        setTestBalance(trustLineBalances[0].value);
+      }
 
       const weWant =
         payCurrency === 'XRP'
@@ -93,17 +158,15 @@ export const Swap = ({
 
       await swap(pkpXrplWallet, weWant, weSpend, xrplNetwork);
 
-      // 스왑 후 잔액 업데이트
-      const newBalance = await getUpdatedBalance(
+      const newXrpBalance = await getUpdatedBalance(
         client,
         xrplAddress,
-        originXrplBalance,
+        Number(xrpBalance),
       );
-      setXrpBalance(newBalance.toString());
+      setXrpBalance(newXrpBalance.toString());
 
-      {
-        /*getTestTokenBalance*/
-      }
+      const newTestBalance = await getTestTokenBalance(client, xrplAddress);
+      setTestBalance(newTestBalance);
 
       await client.disconnect();
     } catch (error) {
