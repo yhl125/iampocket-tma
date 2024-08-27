@@ -54,7 +54,7 @@ export default function Dashboard({
   };
 
   return (
-    <div className="max-w-md mx-auto px-4">
+    <div className="px-4">
       <div className="text-center mb-4">
         <div className="text-3xl font-bold">$0</div>
         <div className="text-muted-foreground">
