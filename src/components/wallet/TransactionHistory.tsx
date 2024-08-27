@@ -13,7 +13,6 @@ import {
 } from 'xrpl';
 import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
-import Loading from '../Loading';
 
 interface TransactionHistoryProps {
   sessionSigs?: SessionSigsMap;
@@ -40,13 +39,48 @@ export default function TransactionHistory({
   xrplAddress,
   xrplNetwork,
 }: TransactionHistoryProps) {
-  const [marker, setMarker] = useState<unknown | undefined>();
-  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
-    [],
-  );
+  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const markerRef = useRef<unknown | undefined>(undefined);
   const observer = useRef<IntersectionObserver | null>(null);
+  const initialFetchDone = useRef(false);
+
+  const fetchTransactionHistory = useCallback(async () => {
+    if (!sessionSigs || !currentAccount || !xrplAddress || isLoading || !hasMore) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const client = getXrplCilent(xrplNetwork);
+      await client.connect();
+
+      const payload: AccountTxRequest = {
+        command: 'account_tx',
+        account: xrplAddress,
+        limit: 20,
+      };
+
+      if (markerRef.current) {
+        payload.marker = markerRef.current;
+      }
+
+      const { result } = await client.request(payload);
+      await client.disconnect();
+
+      const { transactions: responseTransactions, marker: nextMarker } = result;
+
+      setTransactions((prevTransactions) => [...prevTransactions, ...responseTransactions]);
+      markerRef.current = nextMarker;
+      setHasMore(!!nextMarker);
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [sessionSigs, currentAccount, xrplAddress, xrplNetwork, isLoading, hasMore]);
 
   const lastTransactionElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -58,100 +92,16 @@ export default function TransactionHistory({
         }
       });
       if (node) observer.current.observe(node);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [isLoading, hasMore],
+    [isLoading, hasMore, fetchTransactionHistory]
   );
 
   useEffect(() => {
-    fetchTransactionHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const fetchTransactionHistory = async () => {
-      if (!sessionSigs) {
-        throw new Error('No session sigs');
-      }
-      if (!currentAccount) {
-        throw new Error('No current account');
-      }
-      if (!xrplAddress) {
-        throw new Error('No xrpl address');
-      }
-
-      setIsLoading(true);
-      try {
-        const client = getXrplCilent(xrplNetwork);
-        await client.connect();
-
-        // Get the transaction history
-        const payload: AccountTxRequest = {
-          command: 'account_tx',
-          account: xrplAddress,
-          limit: 20,
-        };
-
-        if (marker) {
-          payload.marker = marker;
-        }
-
-        const { result } = await client.request(payload);
-        await client.disconnect();
-
-        const { transactions: responseTransactions, marker: nextMarker } =
-          result;
-        setTransactions((prevTransactions) => [
-          ...prevTransactions,
-          ...responseTransactions,
-        ]);
-        setMarker(nextMarker);
-        setHasMore(!!nextMarker);
-      } catch (error) {
-        console.error('Error fetching transaction history:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTransactionHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function fetchTransactionHistory() {
-    if (!sessionSigs) {
-      throw new Error('No session sigs');
+    if (!initialFetchDone.current) {
+      fetchTransactionHistory();
+      initialFetchDone.current = true;
     }
-    if (!currentAccount) {
-      throw new Error('No current account');
-    }
-    const pkpWallet = new PKPXrplWallet({
-      controllerSessionSigs: sessionSigs,
-      pkpPubKey: currentAccount.publicKey,
-      litNodeClient,
-    });
-    const client = new Client('wss://s.altnet.rippletest.net:51233');
-    await client.connect();
-
-    // Get the transaction history
-    const payload: AccountTxRequest = {
-      command: 'account_tx',
-      account: pkpWallet.address,
-      limit: 10,
-    };
-
-    if (marker) {
-      payload.marker = marker;
-    }
-
-    // Wait for the response: use the client.request() method to send the payload
-    const { result } = await client.request(payload);
-    await client.disconnect();
-
-    const { transactions: responseTransactions, marker: nextMarker } = result;
-    setMarker(nextMarker);
-    setTransactions(transactions.concat(responseTransactions));
-  }
+  }, [fetchTransactionHistory]);
 
   const txResults = transactions.map((transaction) => {
     const tx_json = transaction.tx_json!;
@@ -199,6 +149,7 @@ export default function TransactionHistory({
         };
     }
   });
+
   function renderAmount(delivered: Amount | undefined) {
     if (!delivered) {
       return '-';
@@ -212,7 +163,7 @@ export default function TransactionHistory({
       }`;
     }
   }
-  // Converts the hex value to a string
+
   function getTokenName(currencyCode: string): string {
     if (!currencyCode) return '';
     if (
@@ -236,7 +187,6 @@ export default function TransactionHistory({
         return text_code;
       }
       // Other hex format, return as-is.
-      // For parsing other rare formats, see https://github.com/XRPLF/xrpl-dev-portal/blob/master/content/_code-samples/normalize-currency-codes/js/normalize-currency-code.js
       return currencyCode;
     }
     return '';
@@ -336,14 +286,16 @@ export default function TransactionHistory({
   return (
     <>
       <h1 className="text-2xl font-bold mb-4 text-gray-800 px-6">My History</h1>
-      <div>{txResultsToComponet()}
-      {isLoading && (
+      <div>
+        {txResultsToComponet()}
+        {isLoading && (
           <>
             <SkeletonTransaction />
             <SkeletonTransaction />
             <SkeletonTransaction />
           </>
         )}
+        <div ref={lastTransactionElementRef} />
       </div>
     </>
   );
