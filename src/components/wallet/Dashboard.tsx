@@ -13,6 +13,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
 import { AccountLinesTrustline } from 'xrpl';
 import SelectToken from './send/SelectToken';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
@@ -37,7 +44,7 @@ export default function Dashboard({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [view, setView] = useState<'default' | 'selectToken'>('default');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchBalance() {
@@ -99,8 +106,9 @@ export default function Dashboard({
         console.error(err);
         if (err instanceof Error && err.message == 'Account not found.') {
           setMainTokenBalance('0');
+        } else {
+          setError(err instanceof Error ? err.message : String(err));
         }
-        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -124,16 +132,6 @@ export default function Dashboard({
     );
   };
 
-  if (view === 'selectToken') {
-    return (
-      <SelectToken
-        mainTokenBalance={mainTokenBalance}
-        trustLineBalances={trustLineBalances}
-        setView={setView}
-      />
-    );
-  }
-
   return (
     <div className="px-4">
       <div className="text-center mb-4">
@@ -156,7 +154,20 @@ export default function Dashboard({
           Faucet
         </Button>
         {/* <Button>Receive</Button> */}
-        <Button onClick={() => setView('selectToken')}>Send</Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button>Send</Button>
+          </SheetTrigger>
+          <SheetContent
+            side="bottom"
+            className="h-[calc(100vh-4.5rem)] pt-6"
+          >
+            <SelectToken
+              mainTokenBalance={mainTokenBalance}
+              trustLineBalances={trustLineBalances}
+            />
+          </SheetContent>
+        </Sheet>
         <Button
           onClick={() =>
             updateSessionWhenExpires().then(() =>

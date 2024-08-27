@@ -3,18 +3,15 @@ import { CheckIcon, TrustLineBalance } from '@/components/wallet/TokenBalance';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 interface SelectTokenProps {
   mainTokenBalance: string;
   trustLineBalances: TrustLineBalance[];
-  setView: (view: 'default' | 'selectToken') => void;
 }
 
 const SelectToken = ({
   mainTokenBalance,
   trustLineBalances,
-  setView,
 }: SelectTokenProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const filteredTokens = useMemo(() => {
@@ -28,20 +25,21 @@ const SelectToken = ({
   }, [searchTerm, trustLineBalances]);
 
   return (
-    <div className="px-4">
-      <div className="relative">
+    <div>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">My History</h1>
+      <div className="relative pb-4">
         <Input
-          placeholder="Search Tokens..."
+          placeholder="Search Token..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <Search
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-          size={20}
+          className="absolute left-3 top-5 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+          size={18}
         />
       </div>
-      <div className="border-y py-4">
+      <div className="border-b py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Avatar>
@@ -60,7 +58,7 @@ const SelectToken = ({
         </div>
       </div>
       {trustLineBalances.length !== 0 && (
-        <div className="border-y py-4">
+        <div className="border-b py-4">
           {filteredTokens.map((line, index) => (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -80,9 +78,6 @@ const SelectToken = ({
           ))}
         </div>
       )}
-      <div className="flex justify-center mt-4 fixed bottom-0">
-        <Button onClick={() => setView('default')}>Close</Button>
-      </div>
     </div>
   );
 };

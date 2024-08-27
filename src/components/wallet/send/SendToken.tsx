@@ -92,8 +92,9 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
         console.error(err);
         if (err instanceof Error && err.message == 'Account not found.') {
           setAvailableAmount('0');
+        } else {
+          setError(err instanceof Error ? err.message : String(err));
         }
-        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }

@@ -18,6 +18,7 @@
     "@lit-protocol/pkp-ethers": "^6.4.4",
     "@lit-protocol/types": "^6.4.4",
     "@radix-ui/react-avatar": "^1.1.0",
+    "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-radio-group": "^1.2.0",
     "@radix-ui/react-slot": "^1.1.0",

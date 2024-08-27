@@ -50,11 +50,16 @@ export const Swap = ({
     }
   }, [xrplAddress]);
 
-  const getTestTokenBalance = async (client: any, address: string): Promise<string> => {
+  const getTestTokenBalance = async (
+    client: any,
+    address: string,
+  ): Promise<string> => {
     try {
       const balances = await client.getBalances(address);
       const testTokenBalance = balances.find(
-        (balance: any) => balance.currency === 'TST' && balance.issuer === 'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd'
+        (balance: any) =>
+          balance.currency === 'TST' &&
+          balance.issuer === 'rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
       );
       return testTokenBalance ? testTokenBalance.value : '0';
     } catch (error) {
@@ -135,7 +140,7 @@ export const Swap = ({
       if (mainTokenBalance) {
         setXrpBalance(mainTokenBalance.value);
       }
-      if (trustLineBalances) {
+      if (trustLineBalances && trustLineBalances.length > 0) {
         setTestBalance(trustLineBalances[0].value);
       }
 

@@ -81,7 +81,7 @@ const TokenBalance = ({
         </div>
       </div>
       {trustLineBalances.length !== 0 && (
-        <div className="border-y py-4">
+        <div className="border-b py-4">
           {trustLineBalances.map((line, index) => (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
