@@ -13,6 +13,7 @@ import {
 } from 'xrpl';
 import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
+import Loading from '../Loading';
 
 interface TransactionHistoryProps {
   sessionSigs?: SessionSigsMap;
@@ -35,23 +36,26 @@ export default function TransactionHistory({
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastTransactionElementRef = useCallback((node: HTMLDivElement) => {
-    if (isLoading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        fetchTransactionHistory();
-      }
-    });
-    if (node) observer.current.observe(node);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, hasMore]);
+  const lastTransactionElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchTransactionHistory();
+        }
+      });
+      if (node) observer.current.observe(node);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [isLoading, hasMore],
+  );
 
   useEffect(() => {
     fetchTransactionHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   useEffect(() => {
     const fetchTransactionHistory = async () => {
       if (!sessionSigs) {
@@ -63,36 +67,40 @@ export default function TransactionHistory({
       if (!xrplAddress) {
         throw new Error('No xrpl address');
       }
-      
+
       setIsLoading(true);
-    try {
-      const client = getXrplCilent(xrplNetwork);
-      await client.connect();
+      try {
+        const client = getXrplCilent(xrplNetwork);
+        await client.connect();
 
-      // Get the transaction history
-      const payload: AccountTxRequest = {
-        command: 'account_tx',
-        account: xrplAddress,
-        limit: 20,
-      };
+        // Get the transaction history
+        const payload: AccountTxRequest = {
+          command: 'account_tx',
+          account: xrplAddress,
+          limit: 20,
+        };
 
-      if (marker) {
-        payload.marker = marker;
+        if (marker) {
+          payload.marker = marker;
+        }
+
+        const { result } = await client.request(payload);
+        await client.disconnect();
+
+        const { transactions: responseTransactions, marker: nextMarker } =
+          result;
+        setTransactions((prevTransactions) => [
+          ...prevTransactions,
+          ...responseTransactions,
+        ]);
+        setMarker(nextMarker);
+        setHasMore(!!nextMarker);
+      } catch (error) {
+        console.error('Error fetching transaction history:', error);
+      } finally {
+        setIsLoading(false);
       }
-
-      const { result } = await client.request(payload);
-      await client.disconnect();
-
-      const { transactions: responseTransactions, marker: nextMarker } = result;
-      setTransactions(prevTransactions => [...prevTransactions, ...responseTransactions]);
-      setMarker(nextMarker);
-      setHasMore(!!nextMarker);
-    } catch (error) {
-      console.error('Error fetching transaction history:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    };
 
     fetchTransactionHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,6 +230,10 @@ export default function TransactionHistory({
     return '';
   }
 
+  if (isLoading) {
+    return <Loading copy="Loading..." />;
+  }
+
   function txResultsToComponet() {
     if (!sessionSigs) {
       throw new Error('No session sigs');
@@ -313,5 +325,10 @@ export default function TransactionHistory({
     });
   }
 
-  return <div>{txResultsToComponet()}</div>;
+  return (
+    <>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800 px-6">My History</h1>
+      <div>{txResultsToComponet()}</div>
+    </>
+  );
 }

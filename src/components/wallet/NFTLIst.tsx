@@ -133,8 +133,8 @@ export const NFTList: React.FC<NFTListProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      <div className="p-6 bg-white shadow-sm">
+    <div className="flex flex-col h-full">
+      <div className="px-6">
         <h1 className="text-2xl font-bold mb-4 text-gray-800">My Collection</h1>
         <div className="relative">
           <Input
