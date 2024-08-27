@@ -15,15 +15,16 @@ import {
   getPkpXrplWallet,
   getXrplCilent,
   sendXrplToken,
+  truncateAddress,
 } from '@/utils/xrpl';
 import { observable } from '@legendapp/state';
 import { syncObservable } from '@legendapp/state/sync';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
-import { IssuedCurrencyAmount, Payment } from 'xrpl';
+import { IssuedCurrencyAmount, Payment, xrpToDrops } from 'xrpl';
 
 interface SelectTokenProps {
   token: TrustLineBalance | string;
-  setView: (view: 'default' | 'selectToken') => void;
+  setView: (view: 'select' | 'send') => void;
 }
 
 const SendToken = ({ token, setView }: SelectTokenProps) => {
@@ -132,11 +133,12 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
     if (typeof token === 'string') {
       const payment: Payment = {
         TransactionType: 'Payment',
-        Amount: amount,
+        Amount: xrpToDrops(amount),
         Destination: recipient,
         Account: pkpXrplWallet.address,
         DestinationTag: destinationTag,
       };
+      console.log(payment);
       return await sendXrplToken(pkpXrplWallet, xrplNetwork$.get(), payment);
     } else {
       const paymentAmount: IssuedCurrencyAmount = {
@@ -156,14 +158,14 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
   }
 
   const handleBackClick = () => {
-    setView('selectToken');
+    setView('select');
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-black text-white">
+    <Card className="w-full max-w-md mx-auto">
       <Button
         variant="ghost"
-        className="absolute top-4 left-4 p-1 text-white bg-gray-800 rounded-full hover:bg-gray-700"
+        className="absolute top-4 left-4 p-1 rounded-full"
         onClick={handleBackClick}
       >
         <ArrowLeft className="h-4 w-4" />
@@ -175,7 +177,7 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16rounded-full flex items-center justify-center">
             <DollarSign size={32} />
           </div>
         </div>
@@ -185,7 +187,7 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
             placeholder="Recipient's Solana address"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
-            className="pl-3 pr-10 py-2 bg-gray-900 border-gray-800 text-gray-300 rounded"
+            className="pl-3 pr-10 py-2  rounded"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -197,7 +199,7 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[calc(100%-2rem)] bg-gray-900 border-gray-800 text-white rounded-md mt-1"
+              className="w-[calc(100%-2rem)]rounded-md mt-1"
               align="start"
               side="bottom"
               sideOffset={5}
@@ -206,10 +208,12 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
                 <DropdownMenuItem
                   key={index}
                   onSelect={() => handleAddressSelect(entry.address)}
-                  className="focus:bg-gray-800 py-2"
+                  className="py-2"
                 >
-                  <span className="text-white">{entry.name}</span>
-                  <span className="ml-auto text-gray-500">{entry.address}</span>
+                  <span>{entry.name}</span>
+                  <span className="ml-auto">
+                    {truncateAddress(entry.address)}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -221,10 +225,10 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="pl-3 pr-24 py-2 bg-gray-900 border-gray-800 text-gray-300 rounded"
+            className="pl-3 pr-24 py-2rounded"
           />
           <div className="absolute right-2 flex items-center">
-            <span className="text-gray-400 mr-2">{getTokenName(token)}</span>
+            <span className="mr-2">{getTokenName(token)}</span>
             <Button
               variant="secondary"
               size="sm"
@@ -250,14 +254,14 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
         <div className="flex space-x-2 pt-4">
           <Button
             variant="outline"
-            className="flex-1 bg-gray-900 text-white border-gray-700 hover:bg-gray-800"
-            onClick={() => setView('default')}
+            className="flex-1"
+            onClick={() => setView('select')}
           >
             Cancel
           </Button>
           <Button
             variant="default"
-            className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+            className="flex-1"
             onClick={() => sendToken(token, recipient, amount)}
           >
             Confirm

@@ -3,17 +3,29 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CheckIcon, TrustLineBalance } from '@/components/wallet/TokenBalance';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import SendToken from './SendToken';
 
 interface TokenCardProps {
   token: TrustLineBalance | string;
   balance: string;
+  setView: (view: 'select' | 'send') => void;
+  setSelectedToken: (token: TrustLineBalance | string) => void;
 }
 
-const TokenCard: React.FC<TokenCardProps> = ({ token, balance }) => {
+const TokenCard: React.FC<TokenCardProps> = ({
+  token,
+  balance,
+  setView,
+  setSelectedToken,
+}) => {
   const isXRP = token === 'XRP';
   return (
     <div
       className="border-t last:border-b py-4 cursor-pointer hover:bg-gray-100"
+      onClick={() => {
+        setSelectedToken(token);
+        setView('send');
+      }}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -53,6 +65,10 @@ const SelectToken = ({
   trustLineBalances,
 }: SelectTokenProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [view, setView] = useState<'select' | 'send'>('select');
+  const [selectedToken, setSelectedToken] = useState<
+    TrustLineBalance | string
+  >();
   const filteredTokens = useMemo(() => {
     if (!searchTerm) {
       return trustLineBalances;
@@ -62,6 +78,10 @@ const SelectToken = ({
       return token.currency.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [searchTerm, trustLineBalances]);
+
+  if (view === 'send' && selectedToken) {
+    return <SendToken token={selectedToken} setView={setView} />;
+  }
 
   return (
     <div>
@@ -81,12 +101,16 @@ const SelectToken = ({
       <TokenCard
         token="XRP"
         balance={mainTokenBalance}
+        setView={setView}
+        setSelectedToken={setSelectedToken}
       />
       {filteredTokens.map((token, index) => (
         <TokenCard
           key={index}
           token={token}
           balance={token.value}
+          setView={setView}
+          setSelectedToken={setSelectedToken}
         />
       ))}
     </div>
