@@ -6,6 +6,7 @@ import {
   FundingOptions,
   getBalanceChanges,
   OfferCreate,
+  Payment,
   TransactionMetadata,
   XRPLFaucetError,
 } from 'xrpl';
@@ -393,5 +394,20 @@ export async function swap(
     JSON.stringify(balanceChanges, null, 2),
   );
 
+  return result;
+}
+
+export async function sendXrp(
+  pkpWallet: PKPXrplWallet,
+  network: XrplNetwork,
+  payment: Payment,
+) {
+  const client = getXrplCilent(network);
+  await client.connect();
+
+  const prepared = await client.autofill(payment);
+  const signed = await pkpWallet.sign(prepared);
+  const result = await client.submitAndWait(signed.tx_blob);
+  await client.disconnect();
   return result;
 }
