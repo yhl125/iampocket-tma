@@ -139,7 +139,7 @@ export default function WalletPage() {
   return (
     <div
       className={cn(
-        'antialiased min-h-screen flex flex-col',
+        'antialiased max-h-screen flex flex-col',
         fontHeading.variable,
         fontBody.variable,
       )}

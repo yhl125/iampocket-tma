@@ -8,7 +8,7 @@ interface CreateAccountProps {
 
 const CreateAccount: React.FC<CreateAccountProps> = ({ error }) => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+    <div className="flex items-center justify-center max-h-screen bg-background p-4">
       <div className="w-full max-w-md flex flex-col items-center space-y-6">
         {error && (
           <div className="w-full p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
