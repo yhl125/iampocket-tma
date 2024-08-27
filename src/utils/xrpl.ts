@@ -397,7 +397,7 @@ export async function swap(
   return result;
 }
 
-export async function sendXrp(
+export async function sendXrplToken(
   pkpWallet: PKPXrplWallet,
   network: XrplNetwork,
   payment: Payment,
