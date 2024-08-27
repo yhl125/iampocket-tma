@@ -88,7 +88,6 @@ export default function Dashboard({
         >
           Mint NFT
         </Button>
-        <Button>Mint Token</Button>
       </div>
       <TokenBalance xrplAddress={xrplAddress} xrplNetwork={xrplNetwork} />
     </div>

@@ -108,9 +108,13 @@ const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
         }
       } catch (err) {
         console.error(err);
+        if (err instanceof Error && err.message == 'Account not found.') {
+          setMainTokenBalance('0');
+        }
         setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchBalance();
   }, [xrplAddress, xrplNetwork]);

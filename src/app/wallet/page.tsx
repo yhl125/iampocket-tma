@@ -19,6 +19,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { XrplNetwork } from '@/utils/xrpl';
 import { NFTList } from '@/components/wallet/NFTLIst';
 import Header from '@/components/wallet/Header';
+import { Swap } from '@/components/wallet/Swap';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -171,6 +172,14 @@ export default function WalletPage() {
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
+          {view === 'swap' && (
+            <Swap
+              sessionSigs={sessionSigs$.get()}
+              currentAccount={currentAccount$.get()}
+              xrplAddress={xrplAddress$.get()}
+              xrplNetwork={xrplNetwork$.get()}
+            />
+          )}
           {view === 'history' && (
             <TransactionHistory
               sessionSigs={sessionSigs$.get()}
@@ -179,7 +188,6 @@ export default function WalletPage() {
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
-          {/* Add other views as needed */}
         </div>
       </div>
       <Toaster />
