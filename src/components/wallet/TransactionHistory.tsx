@@ -1,5 +1,5 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { litNodeClient } from '@/utils/lit';
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
@@ -31,6 +31,27 @@ export default function TransactionHistory({
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
     [],
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastTransactionElementRef = useCallback((node: HTMLDivElement) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchTransactionHistory();
+      }
+    });
+    if (node) observer.current.observe(node);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, hasMore]);
+
+  useEffect(() => {
+    fetchTransactionHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
   useEffect(() => {
     const fetchTransactionHistory = async () => {
       if (!sessionSigs) {
@@ -43,6 +64,8 @@ export default function TransactionHistory({
         throw new Error('No xrpl address');
       }
       
+      setIsLoading(true);
+    try {
       const client = getXrplCilent(xrplNetwork);
       await client.connect();
 
@@ -50,17 +73,26 @@ export default function TransactionHistory({
       const payload: AccountTxRequest = {
         command: 'account_tx',
         account: xrplAddress,
-        limit: 10,
+        limit: 20,
       };
 
-      // Wait for the response: use the client.request() method to send the payload
+      if (marker) {
+        payload.marker = marker;
+      }
+
       const { result } = await client.request(payload);
       await client.disconnect();
 
       const { transactions: responseTransactions, marker: nextMarker } = result;
+      setTransactions(prevTransactions => [...prevTransactions, ...responseTransactions]);
       setMarker(nextMarker);
-      setTransactions(responseTransactions);
-    };
+      setHasMore(!!nextMarker);
+    } catch (error) {
+      console.error('Error fetching transaction history:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
     fetchTransactionHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
