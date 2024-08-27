@@ -1,6 +1,6 @@
 import { TrustLineBalance } from '@/components/wallet/TokenBalance';
 import { Input } from '@/components/ui/input';
-import { AtSign, DollarSign } from 'lucide-react';
+import { ArrowLeft, AtSign, DollarSign } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,11 +154,22 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
     }
   }
 
+  const handleBackClick = () => {
+    setView('selectToken');
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto bg-black text-white">
+      <Button
+        variant="ghost"
+        className="absolute top-4 left-4 p-1 text-white bg-gray-800 rounded-full hover:bg-gray-700"
+        onClick={handleBackClick}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-normal text-center">
-          Send USDC
+          Send {getTokenName(token)}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
