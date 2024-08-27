@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react';
-import { AccountLinesTrustline } from 'xrpl';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 
 export interface TrustLineBalance {
   value: string;
@@ -112,7 +109,7 @@ const TokenBalance = ({
 
 export default TokenBalance;
 
-function CheckIcon(props: any) {
+export function CheckIcon(props: any) {
   return (
     <svg
       {...props}

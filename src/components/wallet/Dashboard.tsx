@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useState, useEffect } from 'react';
 import { AccountLinesTrustline } from 'xrpl';
+import SelectToken from './send/SelectToken';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
@@ -36,6 +37,7 @@ export default function Dashboard({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [view, setView] = useState<'default' | 'selectToken'>('default');
 
   useEffect(() => {
     async function fetchBalance() {
@@ -122,6 +124,16 @@ export default function Dashboard({
     );
   };
 
+  if (view === 'selectToken') {
+    return (
+      <SelectToken
+        mainTokenBalance={mainTokenBalance}
+        trustLineBalances={trustLineBalances}
+        setView={setView}
+      />
+    );
+  }
+
   return (
     <div className="px-4">
       <div className="text-center mb-4">
@@ -144,7 +156,7 @@ export default function Dashboard({
           Faucet
         </Button>
         {/* <Button>Receive</Button> */}
-        <Button>Send</Button>
+        <Button onClick={() => setView('selectToken')}>Send</Button>
         <Button
           onClick={() =>
             updateSessionWhenExpires().then(() =>

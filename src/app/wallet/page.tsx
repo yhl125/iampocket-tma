@@ -159,7 +159,6 @@ export default function WalletPage() {
               sessionSigs={sessionSigs$.get()}
               currentAccount={currentAccount$.get()}
               updateSessionWhenExpires={updateSessionWhenExpires}
-              handleLogout={handleLogout}
               xrplAddress={xrplAddress$.get()}
               xrplNetwork={xrplNetwork$.get()}
             />
