@@ -60,8 +60,8 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
   });
 
   const addressBook = [
-    { name: 'ACCOUNT_ZERO', address: 'rrrrrrrrrrrrrrrrrrrrrhoLvTp' },
     { name: 'genesis account', address: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh' },
+    { name: 'faucet account', address: 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe' },
   ];
 
   useEffect(() => {
