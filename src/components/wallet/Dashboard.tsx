@@ -139,9 +139,9 @@ export default function Dashboard({
         <div className="text-muted-foreground">
           {truncateAddress(xrplAddress ?? '')}
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="inline-flex items-center justify-center w-8 h-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            className="ml-2 w-8 h-8"
             onClick={() => handleCopyButton(xrplAddress ?? '')}
           >
             <CopyIcon className="w-4 h-4" />
@@ -150,18 +150,21 @@ export default function Dashboard({
         </div>
       </div>
       <div className="flex justify-center space-x-2 mb-4">
-        <Button onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}>
+        <Button
+          variant="outline"
+          className="w-full border border-muted"
+          onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}
+        >
           Faucet
         </Button>
         {/* <Button>Receive</Button> */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button>Send</Button>
+            <Button variant="outline" className="w-full border border-muted">
+              Send
+            </Button>
           </SheetTrigger>
-          <SheetContent
-            side="bottom"
-            className="h-[calc(100vh-4.5rem)] pt-6"
-          >
+          <SheetContent side="bottom" className="h-[calc(100vh-4.5rem)] pt-6">
             <SelectToken
               mainTokenBalance={mainTokenBalance}
               trustLineBalances={trustLineBalances}
@@ -169,6 +172,8 @@ export default function Dashboard({
           </SheetContent>
         </Sheet>
         <Button
+          variant="outline"
+          className="w-full border border-muted"
           onClick={() =>
             updateSessionWhenExpires().then(() =>
               mintNft(
