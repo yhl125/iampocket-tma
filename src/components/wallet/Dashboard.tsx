@@ -1,28 +1,22 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import {
   getPkpXrplWallet,
+  getXrplCilent,
   mintNft,
   truncateAddress,
   xrplFaucet,
   XrplNetwork,
 } from '@/utils/xrpl';
-import TokenBalance from './TokenBalance';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import TokenBalance, { TrustLineBalance } from './TokenBalance';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useState, useEffect } from 'react';
+import { AccountLinesTrustline } from 'xrpl';
 
 interface DashboardProps {
   sessionSigs?: SessionSigsMap;
   currentAccount?: IRelayPKP;
   updateSessionWhenExpires: () => Promise<void>;
-  handleLogout: () => void;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
@@ -31,11 +25,86 @@ export default function Dashboard({
   sessionSigs,
   currentAccount,
   updateSessionWhenExpires,
-  handleLogout,
   xrplAddress,
   xrplNetwork,
 }: DashboardProps) {
   const { toast } = useToast();
+  // fetch balance
+  const [mainTokenBalance, setMainTokenBalance] = useState('0');
+  const [trustLineBalances, setTrustLineBalances] = useState<
+    TrustLineBalance[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  useEffect(() => {
+    async function fetchBalance() {
+      setLoading(true);
+      try {
+        if (!xrplAddress) {
+          throw new Error('No xrpl address');
+        }
+        const client = getXrplCilent(xrplNetwork);
+        await client.connect();
+
+        const balances = await client.getBalances(xrplAddress);
+        const mainTokenBalance = balances?.find(
+          (balance) => balance.issuer === undefined,
+        );
+        let trustLineBalances = balances?.filter(
+          (balance) => balance.issuer !== undefined,
+        ) as TrustLineBalance[];
+
+        const accountLines = await client.request({
+          command: 'account_lines',
+          account: xrplAddress,
+        });
+
+        if (accountLines?.result?.lines) {
+          trustLineBalances = trustLineBalances
+            .map((trustlineBalance) => {
+              const trustlineDetails = accountLines.result.lines.find(
+                (line: AccountLinesTrustline) =>
+                  line.currency === trustlineBalance.currency &&
+                  line.account === trustlineBalance.issuer,
+              );
+
+              return {
+                ...trustlineBalance,
+                trustlineDetails:
+                  trustlineDetails && Number(trustlineDetails.limit)
+                    ? {
+                        limit: Number(trustlineDetails.limit),
+                        noRipple: trustlineDetails.no_ripple === true,
+                      }
+                    : undefined,
+              };
+            })
+            .filter(
+              (trustlineBalance) =>
+                trustlineBalance.trustlineDetails ||
+                trustlineBalance.value !== '0',
+            ); // Hide revoked trustlines with a balance of 0
+        }
+
+        if (mainTokenBalance) {
+          setMainTokenBalance(mainTokenBalance.value);
+        }
+        if (trustLineBalances) {
+          setTrustLineBalances(trustLineBalances);
+        }
+      } catch (err) {
+        console.error(err);
+        if (err instanceof Error && err.message == 'Account not found.') {
+          setMainTokenBalance('0');
+        }
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBalance();
+  }, [xrplAddress, xrplNetwork]);
 
   const handleCopyButton = (text: string) => {
     navigator.clipboard.writeText(text).then(
@@ -89,7 +158,12 @@ export default function Dashboard({
           Mint NFT
         </Button>
       </div>
-      <TokenBalance xrplAddress={xrplAddress} xrplNetwork={xrplNetwork} />
+      <TokenBalance
+        mainTokenBalance={mainTokenBalance}
+        trustLineBalances={trustLineBalances}
+        loading={loading}
+        error={error}
+      />
     </div>
   );
 }

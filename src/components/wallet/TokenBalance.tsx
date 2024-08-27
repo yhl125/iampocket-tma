@@ -4,7 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 
-interface TrustLineBalance {
+export interface TrustLineBalance {
   value: string;
   currency: string;
   issuer: string;
@@ -16,8 +16,10 @@ interface TrustLineBalance {
 }
 
 interface XRPBalanceProps {
-  xrplAddress?: string;
-  xrplNetwork: XrplNetwork;
+  mainTokenBalance: string;
+  trustLineBalances: TrustLineBalance[];
+  loading: boolean;
+  error?: string;
 }
 
 const SkeletonBalance = () => (
@@ -38,83 +40,12 @@ const SkeletonBalance = () => (
   </div>
 );
 
-const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
-  const [mainTokenBalance, setMainTokenBalance] = useState('0');
-  const [trustLineBalances, setTrustLineBalances] = useState<
-    TrustLineBalance[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchBalance() {
-      setLoading(true);
-      try {
-        if (!xrplAddress) {
-          throw new Error('No xrpl address');
-        }
-        const client = getXrplCilent(xrplNetwork);
-        await client.connect();
-
-        const balances = await client.getBalances(xrplAddress);
-        const mainTokenBalance = balances?.find(
-          (balance) => balance.issuer === undefined,
-        );
-        let trustLineBalances = balances?.filter(
-          (balance) => balance.issuer !== undefined,
-        ) as TrustLineBalance[];
-
-        const accountLines = await client.request({
-          command: 'account_lines',
-          account: xrplAddress,
-        });
-
-        if (accountLines?.result?.lines) {
-          trustLineBalances = trustLineBalances
-            .map((trustlineBalance) => {
-              const trustlineDetails = accountLines.result.lines.find(
-                (line: AccountLinesTrustline) =>
-                  line.currency === trustlineBalance.currency &&
-                  line.account === trustlineBalance.issuer,
-              );
-
-              return {
-                ...trustlineBalance,
-                trustlineDetails:
-                  trustlineDetails && Number(trustlineDetails.limit)
-                    ? {
-                        limit: Number(trustlineDetails.limit),
-                        noRipple: trustlineDetails.no_ripple === true,
-                      }
-                    : undefined,
-              };
-            })
-            .filter(
-              (trustlineBalance) =>
-                trustlineBalance.trustlineDetails ||
-                trustlineBalance.value !== '0',
-            ); // Hide revoked trustlines with a balance of 0
-        }
-
-        if (mainTokenBalance) {
-          setMainTokenBalance(mainTokenBalance.value);
-        }
-        if (trustLineBalances) {
-          setTrustLineBalances(trustLineBalances);
-        }
-      } catch (err) {
-        console.error(err);
-        if (err instanceof Error && err.message == 'Account not found.') {
-          setMainTokenBalance('0');
-        }
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBalance();
-  }, [xrplAddress, xrplNetwork]);
-
+const TokenBalance = ({
+  mainTokenBalance,
+  trustLineBalances,
+  loading,
+  error,
+}: XRPBalanceProps) => {
   if (loading) {
     return (
       <>
@@ -162,9 +93,7 @@ const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-semibold">
-                  {line.currency}
-                </div>
+                <div className="font-semibold">{line.currency}</div>
                 <div className="text-muted-foreground">
                   {line.value} {line.currency}
                 </div>
