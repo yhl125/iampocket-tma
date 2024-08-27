@@ -43,7 +43,7 @@ export default function Dashboard({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
-  
+
   const currentAccount$ = observable<IRelayPKP>();
   syncObservable(currentAccount$, {
     persist: {
@@ -182,6 +182,7 @@ export default function Dashboard({
             <SelectToken
               mainTokenBalance={mainTokenBalance}
               trustLineBalances={trustLineBalances}
+              updateSessionWhenExpires={updateSessionWhenExpires}
             />
           </SheetContent>
         </Sheet>

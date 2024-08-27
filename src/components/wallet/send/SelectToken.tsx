@@ -58,11 +58,13 @@ const TokenCard: React.FC<TokenCardProps> = ({
 interface SelectTokenProps {
   mainTokenBalance: string;
   trustLineBalances: TrustLineBalance[];
+  updateSessionWhenExpires: () => Promise<void>;
 }
 
 const SelectToken = ({
   mainTokenBalance,
   trustLineBalances,
+  updateSessionWhenExpires
 }: SelectTokenProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [view, setView] = useState<'select' | 'send'>('select');
@@ -80,7 +82,13 @@ const SelectToken = ({
   }, [searchTerm, trustLineBalances]);
 
   if (view === 'send' && selectedToken) {
-    return <SendToken token={selectedToken} setView={setView} />;
+    return (
+      <SendToken
+        token={selectedToken}
+        setView={setView}
+        updateSessionWhenExpires={updateSessionWhenExpires}
+      />
+    );
   }
 
   return (

@@ -25,9 +25,14 @@ import { IssuedCurrencyAmount, Payment, xrpToDrops } from 'xrpl';
 interface SelectTokenProps {
   token: TrustLineBalance | string;
   setView: (view: 'select' | 'send') => void;
+  updateSessionWhenExpires: () => Promise<void>;
 }
 
-const SendToken = ({ token, setView }: SelectTokenProps) => {
+const SendToken = ({
+  token,
+  setView,
+  updateSessionWhenExpires,
+}: SelectTokenProps) => {
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [availableAmount, setAvailableAmount] = useState<string>();
@@ -126,6 +131,7 @@ const SendToken = ({ token, setView }: SelectTokenProps) => {
     amount: string,
     destinationTag?: number,
   ) {
+    await updateSessionWhenExpires();
     const pkpXrplWallet = getPkpXrplWallet(
       sessionSigs$.get(),
       currentAccount$.get(),
