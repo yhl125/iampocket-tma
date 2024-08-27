@@ -5,6 +5,7 @@ import { Root } from '@/components/Root/Root';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const fontHeading = Inter({
   subsets: ['latin'],
@@ -25,11 +26,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    // light theme style
+    <html lang="en" className="light" style={{ colorScheme: 'light' }}>
       <body
         className={cn('antialiased', fontHeading.variable, fontBody.variable)}
       >
-        <Root>{children}</Root>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          disableTransitionOnChange
+        >
+          <Root>{children}</Root>
+        </ThemeProvider>
       </body>
     </html>
   );
