@@ -4,7 +4,6 @@ import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import Loading from '../Loading';
 import { Search } from 'lucide-react';
 
 interface NFTListProps {
@@ -54,12 +53,23 @@ const NFTCard: React.FC<{ nft: NFTData }> = ({ nft }) => {
   );
 };
 
+const SkeletonNFTCard: React.FC = () => (
+  <Card className="w-full overflow-hidden">
+    <CardContent className="p-0">
+      <div className="relative w-full pb-[100%] bg-gray-200 animate-pulse" />
+      <div className="p-4">
+        <div className="h-4 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export const NFTList: React.FC<NFTListProps> = ({
   xrplAddress,
   xrplNetwork,
 }) => {
   const [nfts, setNfts] = useState<NFTData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -129,10 +139,6 @@ export const NFTList: React.FC<NFTListProps> = ({
     });
   }, [nfts, searchTerm]);
 
-  if (loading) {
-    return <Loading copy="Loading..." />;
-  }
-
   return (
     <div className="flex flex-col h-full">
       <div className="px-6">
@@ -151,7 +157,13 @@ export const NFTList: React.FC<NFTListProps> = ({
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {filteredNfts.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <SkeletonNFTCard key={index} />
+            ))}
+          </div>
+        ) : filteredNfts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <p className="text-xl font-semibold text-gray-500 mb-2">
               No NFTs Found

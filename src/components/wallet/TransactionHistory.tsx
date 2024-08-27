@@ -22,6 +22,18 @@ interface TransactionHistoryProps {
   xrplNetwork: XrplNetwork;
 }
 
+const SkeletonTransaction = () => (
+  <Card className="p-4 mb-4">
+    <div className="flex items-center space-x-2">
+      <div className="flex-1">
+        <div className="h-5 bg-gray-200 rounded w-20 mb-2 animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+      </div>
+      <div className="h-5 bg-gray-200 rounded w-24 animate-pulse" />
+    </div>
+  </Card>
+);
+
 export default function TransactionHistory({
   sessionSigs,
   currentAccount,
@@ -230,10 +242,6 @@ export default function TransactionHistory({
     return '';
   }
 
-  if (isLoading) {
-    return <Loading copy="Loading..." />;
-  }
-
   function txResultsToComponet() {
     if (!sessionSigs) {
       throw new Error('No session sigs');
@@ -328,7 +336,15 @@ export default function TransactionHistory({
   return (
     <>
       <h1 className="text-2xl font-bold mb-4 text-gray-800 px-6">My History</h1>
-      <div>{txResultsToComponet()}</div>
+      <div>{txResultsToComponet()}
+      {isLoading && (
+          <>
+            <SkeletonTransaction />
+            <SkeletonTransaction />
+            <SkeletonTransaction />
+          </>
+        )}
+      </div>
     </>
   );
 }

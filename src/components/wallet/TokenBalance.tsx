@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Client, AccountLinesTrustline } from 'xrpl';
 import { PKPXrplWallet } from 'pkp-xrpl';
 import { litNodeClient } from '@/utils/lit';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
-import { Session } from 'inspector';
 import Loading from '../Loading';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 
 interface TrustLineBalance {
@@ -25,6 +23,24 @@ interface XRPBalanceProps {
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
+
+const SkeletonBalance = () => (
+  <div className="border-t py-4">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+        <div>
+          <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse mb-2" />
+        <div className="h-6 w-12 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </div>
+  </div>
+);
 
 const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
   const [mainTokenBalance, setMainTokenBalance] = useState('0');
@@ -100,7 +116,12 @@ const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
   }, [xrplAddress, xrplNetwork]);
 
   if (loading) {
-    return <div>Fetching Balance..</div>;
+    return (
+      <>
+        <SkeletonBalance />
+        <SkeletonBalance />
+      </>
+    );
   }
 
   if (error) {
