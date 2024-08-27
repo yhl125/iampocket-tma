@@ -20,7 +20,7 @@ interface XRPBalanceProps {
 }
 
 const SkeletonBalance = () => (
-  <div className="border-t py-4">
+  <div className="py-4 border-t last:border-b">
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />

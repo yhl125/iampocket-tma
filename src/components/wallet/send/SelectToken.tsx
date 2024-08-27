@@ -1,8 +1,47 @@
+import { useMemo, useState } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { CheckIcon, TrustLineBalance } from '@/components/wallet/TokenBalance';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+
+interface TokenCardProps {
+  token: TrustLineBalance | string;
+  balance: string;
+}
+
+const TokenCard: React.FC<TokenCardProps> = ({ token, balance }) => {
+  const isXRP = token === 'XRP';
+  return (
+    <div
+      className="border-t last:border-b py-4 cursor-pointer hover:bg-gray-100"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Avatar>
+            {isXRP ? (
+              <AvatarImage src="/xrp.svg" alt="XRP Icon" />
+            ) : (
+              <AvatarFallback className="border-2">
+                {(token as TrustLineBalance).currency}
+              </AvatarFallback>
+            )}
+          </Avatar>
+          <div>
+            <div className="font-semibold">
+              {isXRP ? 'XRP' : (token as TrustLineBalance).currency}
+              {isXRP && (
+                <CheckIcon className="inline-block w-4 h-4 text-blue-500 ml-1" />
+              )}
+            </div>
+            <div className="text-muted-foreground">
+              {balance} {isXRP ? 'XRP' : (token as TrustLineBalance).currency}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface SelectTokenProps {
   mainTokenBalance: string;
@@ -26,7 +65,7 @@ const SelectToken = ({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">My History</h1>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">Select Token</h1>
       <div className="relative pb-4">
         <Input
           placeholder="Search Token..."
@@ -39,45 +78,17 @@ const SelectToken = ({
           size={18}
         />
       </div>
-      <div className="border-b py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Avatar>
-              <AvatarImage src="/xrp.svg" alt="XRP Icon" />
-              <AvatarFallback>XRP</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-semibold">
-                XRP <CheckIcon className="inline-block w-4 h-4 text-blue-500" />
-              </div>
-              <div className="text-muted-foreground">
-                {mainTokenBalance} XRP
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {trustLineBalances.length !== 0 && (
-        <div className="border-b py-4">
-          {filteredTokens.map((line, index) => (
-            <div key={index} className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Avatar>
-                  <AvatarFallback className="border-2">
-                    {line.currency}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <div className="font-semibold">{line.currency}</div>
-                  <div className="text-muted-foreground">
-                    {line.value} {line.currency}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <TokenCard
+        token="XRP"
+        balance={mainTokenBalance}
+      />
+      {filteredTokens.map((token, index) => (
+        <TokenCard
+          key={index}
+          token={token}
+          balance={token.value}
+        />
+      ))}
     </div>
   );
 };
