@@ -80,29 +80,31 @@ const TokenBalance = ({
           </div>
         </div>
       </div>
-      <div className="border-y py-4">
-        {trustLineBalances.map((line, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarFallback className="border-2">
-                  {line.currency}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-semibold">{line.currency}</div>
-                <div className="text-muted-foreground">
-                  {line.value} {line.currency}
+      {trustLineBalances.length !== 0 && (
+        <div className="border-y py-4">
+          {trustLineBalances.map((line, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Avatar>
+                  <AvatarFallback className="border-2">
+                    {line.currency}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold">{line.currency}</div>
+                  <div className="text-muted-foreground">
+                    {line.value} {line.currency}
+                  </div>
                 </div>
               </div>
+              <div className="text-right">
+                <div className="font-semibold">$0</div>
+                <Badge variant="destructive">0%</Badge>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="font-semibold">$0</div>
-              <Badge variant="destructive">0%</Badge>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </>
   );
 };
