@@ -16,6 +16,7 @@ import SelectToken from './send/SelectToken';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -165,6 +166,10 @@ export default function Dashboard({
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[calc(100vh-4.5rem)] pt-6">
+            <SheetHeader>
+              <SheetTitle>Send Token</SheetTitle>
+              <SheetDescription>Send Token</SheetDescription>
+            </SheetHeader>
             <SelectToken
               mainTokenBalance={mainTokenBalance}
               trustLineBalances={trustLineBalances}
