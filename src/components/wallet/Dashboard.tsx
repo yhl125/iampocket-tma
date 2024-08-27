@@ -55,27 +55,6 @@ export default function Dashboard({
 
   return (
     <div className="max-w-md mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar>
-                <AvatarFallback className="border">W</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-32 min-w-[8rem]" align="start">
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="justify-center"
-              >
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <span className="font-semibold">Wallet #1</span>
-        </div>
-        <Badge variant="secondary">{xrplNetwork}</Badge>
-      </div>
       <div className="text-center mb-4">
         <div className="text-3xl font-bold">$0</div>
         <div className="text-muted-foreground">

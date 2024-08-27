@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { XrplNetwork } from '@/utils/xrpl';
 import { NFTList } from '@/components/wallet/NFTLIst';
+import Header from '@/components/wallet/Header';
 import { Swap } from '@/components/wallet/Swap';
 
 const fontHeading = Inter({
@@ -143,13 +144,16 @@ export default function WalletPage() {
         fontBody.variable,
       )}
     >
+      <div className="fixed top-0 left-0 right-0 bg-background z-10">
+        <Header handleLogout={handleLogout} xrplNetwork={xrplNetwork$.get()} />
+      </div>
       <div className="flex-1 overflow-hidden flex flex-col">
         {sessionError && (
           <div className="alert alert--error">
             <p>{sessionError.message}</p>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto pb-16">
+        <div className="flex-1 overflow-y-auto pb-16 pt-20">
           {view === 'dashboard' && (
             <Dashboard
               sessionSigs={sessionSigs$.get()}

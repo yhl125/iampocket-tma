@@ -4,7 +4,7 @@ import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import Loading from '../Loading';
+import { Search } from 'lucide-react';
 
 interface NFTListProps {
   sessionSigs?: SessionSigsMap;
@@ -53,12 +53,23 @@ const NFTCard: React.FC<{ nft: NFTData }> = ({ nft }) => {
   );
 };
 
+const SkeletonNFTCard: React.FC = () => (
+  <Card className="w-full overflow-hidden">
+    <CardContent className="p-0">
+      <div className="relative w-full pb-[100%] bg-gray-200 animate-pulse" />
+      <div className="p-4">
+        <div className="h-4 bg-gray-200 rounded animate-pulse" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export const NFTList: React.FC<NFTListProps> = ({
   xrplAddress,
   xrplNetwork,
 }) => {
   const [nfts, setNfts] = useState<NFTData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -128,13 +139,9 @@ export const NFTList: React.FC<NFTListProps> = ({
     });
   }, [nfts, searchTerm]);
 
-  if (loading) {
-    return <Loading copy="Loading..." />;
-  }
-
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      <div className="p-6 bg-white shadow-sm">
+    <div className="flex flex-col h-full">
+      <div className="px-6">
         <h1 className="text-2xl font-bold mb-4 text-gray-800">My Collection</h1>
         <div className="relative">
           <Input
@@ -143,10 +150,20 @@ export const NFTList: React.FC<NFTListProps> = ({
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {filteredNfts.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <SkeletonNFTCard key={index} />
+            ))}
+          </div>
+        ) : filteredNfts.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <p className="text-xl font-semibold text-gray-500 mb-2">
               No NFTs Found

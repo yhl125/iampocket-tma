@@ -1,5 +1,5 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { litNodeClient } from '@/utils/lit';
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
@@ -13,6 +13,7 @@ import {
 } from 'xrpl';
 import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
+import Loading from '../Loading';
 
 interface TransactionHistoryProps {
   sessionSigs?: SessionSigsMap;
@@ -20,6 +21,18 @@ interface TransactionHistoryProps {
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
+
+const SkeletonTransaction = () => (
+  <Card className="p-4 mb-4">
+    <div className="flex items-center space-x-2">
+      <div className="flex-1">
+        <div className="h-5 bg-gray-200 rounded w-20 mb-2 animate-pulse" />
+        <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+      </div>
+      <div className="h-5 bg-gray-200 rounded w-24 animate-pulse" />
+    </div>
+  </Card>
+);
 
 export default function TransactionHistory({
   sessionSigs,
@@ -31,6 +44,30 @@ export default function TransactionHistory({
   const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
     [],
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const lastTransactionElementRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchTransactionHistory();
+        }
+      });
+      if (node) observer.current.observe(node);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [isLoading, hasMore],
+  );
+
+  useEffect(() => {
+    fetchTransactionHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const fetchTransactionHistory = async () => {
       if (!sessionSigs) {
@@ -42,24 +79,39 @@ export default function TransactionHistory({
       if (!xrplAddress) {
         throw new Error('No xrpl address');
       }
-      
-      const client = getXrplCilent(xrplNetwork);
-      await client.connect();
 
-      // Get the transaction history
-      const payload: AccountTxRequest = {
-        command: 'account_tx',
-        account: xrplAddress,
-        limit: 10,
-      };
+      setIsLoading(true);
+      try {
+        const client = getXrplCilent(xrplNetwork);
+        await client.connect();
 
-      // Wait for the response: use the client.request() method to send the payload
-      const { result } = await client.request(payload);
-      await client.disconnect();
+        // Get the transaction history
+        const payload: AccountTxRequest = {
+          command: 'account_tx',
+          account: xrplAddress,
+          limit: 20,
+        };
 
-      const { transactions: responseTransactions, marker: nextMarker } = result;
-      setMarker(nextMarker);
-      setTransactions(responseTransactions);
+        if (marker) {
+          payload.marker = marker;
+        }
+
+        const { result } = await client.request(payload);
+        await client.disconnect();
+
+        const { transactions: responseTransactions, marker: nextMarker } =
+          result;
+        setTransactions((prevTransactions) => [
+          ...prevTransactions,
+          ...responseTransactions,
+        ]);
+        setMarker(nextMarker);
+        setHasMore(!!nextMarker);
+      } catch (error) {
+        console.error('Error fetching transaction history:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchTransactionHistory();
@@ -281,5 +333,18 @@ export default function TransactionHistory({
     });
   }
 
-  return <div>{txResultsToComponet()}</div>;
+  return (
+    <>
+      <h1 className="text-2xl font-bold mb-4 text-gray-800 px-6">My History</h1>
+      <div>{txResultsToComponet()}
+      {isLoading && (
+          <>
+            <SkeletonTransaction />
+            <SkeletonTransaction />
+            <SkeletonTransaction />
+          </>
+        )}
+      </div>
+    </>
+  );
 }
