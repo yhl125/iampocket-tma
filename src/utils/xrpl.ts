@@ -1,13 +1,18 @@
 import { PKPXrplWallet } from 'pkp-xrpl';
 import {
+  Amount,
   Client,
   convertStringToHex,
   FundingOptions,
+  getBalanceChanges,
+  OfferCreate,
+  TransactionMetadata,
   XRPLFaucetError,
 } from 'xrpl';
 import { FaucetRequestBody } from 'xrpl/dist/npm/Wallet/fundWallet';
 import { iampocketRelayServer, litNodeClient } from './lit';
 import { SessionSigsMap, IRelayPKP } from '@lit-protocol/types';
+import BigNumber from 'bignumber.js';
 
 // Interval to check an account balance
 const INTERVAL_SECONDS = 1;
@@ -191,7 +196,7 @@ async function processError(response: Response, body: any): Promise<never> {
  * @param originalBalance - The initial balance before the funding.
  * @returns A Promise boolean.
  */
-async function getUpdatedBalance(
+export async function getUpdatedBalance(
   client: Client,
   address: string,
   originalBalance: number,
@@ -290,4 +295,103 @@ export function getPkpXrplWallet(
     litNodeClient,
   });
   return pkpWallet;
+}
+
+export async function swap(
+  pkpWallet: PKPXrplWallet,
+  weWant: { currency: string; issuer?: string; value: string },
+  weSpend: { currency: string; issuer?: string; value: string },
+  network: XrplNetwork,
+) {
+  const client = getXrplCilent(network);
+  await client.connect();
+
+  // Define the proposed trade
+  const proposedQuality = new BigNumber(weSpend.value).dividedBy(
+    new BigNumber(weWant.value),
+  );
+
+  // Look up Offers
+  const orderbookResp = await client.request({
+    command: 'book_offers',
+    taker: pkpWallet.address,
+    ledger_index: 'current',
+    taker_gets: weWant,
+    taker_pays: weSpend,
+  });
+
+  const offers = orderbookResp.result.offers;
+  const wantAmt = new BigNumber(weWant.value);
+  let runningTotal = new BigNumber(0);
+
+  if (offers) {
+    for (const o of offers) {
+      if (
+        o.quality &&
+        new BigNumber(o.quality).isLessThanOrEqualTo(proposedQuality)
+      ) {
+        runningTotal = runningTotal.plus(new BigNumber(o.owner_funds || 0));
+        if (runningTotal.isGreaterThanOrEqualTo(wantAmt)) {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  let takerPays: Amount;
+  if (!weWant.issuer) {
+    takerPays = weWant.value;
+  } else {
+    takerPays = {
+      currency: weWant.currency,
+      issuer: weWant.issuer,
+      value: weWant.value,
+    };
+  }
+  let takerGets: Amount;
+  if (!weSpend.issuer) {
+    takerGets = weSpend.value;
+  } else {
+    takerGets = {
+      currency: weSpend.currency,
+      issuer: weSpend.issuer,
+      value: weSpend.value,
+    };
+  }
+
+  // Send OfferCreate transaction
+  const offerCreateTx: OfferCreate = {
+    TransactionType: 'OfferCreate',
+    Account: pkpWallet.address,
+    TakerPays: takerPays,
+    TakerGets: takerGets,
+  };
+
+  const prepared = await client.autofill(offerCreateTx);
+  const signed = await pkpWallet.sign(prepared);
+  const result = await client.submitAndWait(signed.tx_blob);
+
+  await client.disconnect();
+
+  if (
+    (result.result.meta as TransactionMetadata).TransactionResult ===
+    'tesSUCCESS'
+  ) {
+    console.log(
+      `Transaction succeeded: https://testnet.xrpl.org/transactions/${signed.hash}`,
+    );
+  } else {
+    throw new Error(`Error sending transaction: ${result}`);
+  }
+
+  const balanceChanges = getBalanceChanges(
+    result.result.meta as TransactionMetadata,
+  );
+  console.log(
+    'Total balance changes:',
+    JSON.stringify(balanceChanges, null, 2),
+  );
+
+  return result;
 }
