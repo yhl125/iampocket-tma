@@ -12,10 +12,11 @@ import {
 } from '@/utils/xrpl';
 import { Badge } from '@/components/ui/badge';
 import { AccountLinesTrustline, xrpToDrops } from 'xrpl';
+import { observable } from '@legendapp/state';
+import { syncObservable } from '@legendapp/state/sync';
 
 interface SwapProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
+  updateSessionWhenExpires: () => Promise<void>;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
@@ -31,8 +32,7 @@ interface TrustLineBalance {
 }
 
 export const Swap = ({
-  sessionSigs,
-  currentAccount,
+  updateSessionWhenExpires,
   xrplAddress,
   xrplNetwork,
 }: SwapProps) => {
@@ -43,6 +43,19 @@ export const Swap = ({
   const [xrpBalance, setXrpBalance] = useState('0');
   const [testBalance, setTestBalance] = useState('0');
   const [isLoading, setIsLoading] = useState(false);
+
+  const currentAccount$ = observable<IRelayPKP>();
+  syncObservable(currentAccount$, {
+    persist: {
+      name: 'currentAccount',
+    },
+  });
+  const sessionSigs$ = observable<SessionSigsMap>();
+  syncObservable(sessionSigs$, {
+    persist: {
+      name: 'sessionSigs',
+    },
+  });
 
   useEffect(() => {
     if (xrplAddress) {
@@ -93,9 +106,13 @@ export const Swap = ({
     setIsLoading(true);
 
     try {
+      await updateSessionWhenExpires();
       const client = getXrplCilent(xrplNetwork);
       await client.connect();
-      const pkpXrplWallet = getPkpXrplWallet(sessionSigs, currentAccount);
+      const pkpXrplWallet = getPkpXrplWallet(
+        sessionSigs$.get(),
+        currentAccount$.get(),
+      );
 
       const balances = await client.getBalances(xrplAddress);
       const mainTokenBalance = balances?.find(

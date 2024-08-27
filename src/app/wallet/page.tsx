@@ -156,8 +156,6 @@ export default function WalletPage() {
         <div className="flex-1 overflow-y-auto pb-16 pt-20">
           {view === 'dashboard' && (
             <Dashboard
-              sessionSigs={sessionSigs$.get()}
-              currentAccount={currentAccount$.get()}
               updateSessionWhenExpires={updateSessionWhenExpires}
               xrplAddress={xrplAddress$.get()}
               xrplNetwork={xrplNetwork$.get()}
@@ -165,24 +163,19 @@ export default function WalletPage() {
           )}
           {view === 'ntfs' && (
             <NFTList
-              sessionSigs={sessionSigs$.get()}
-              currentAccount={currentAccount$.get()}
               xrplAddress={xrplAddress$.get()}
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
           {view === 'swap' && (
             <Swap
-              sessionSigs={sessionSigs$.get()}
-              currentAccount={currentAccount$.get()}
+              updateSessionWhenExpires={updateSessionWhenExpires}
               xrplAddress={xrplAddress$.get()}
               xrplNetwork={xrplNetwork$.get()}
             />
           )}
           {view === 'history' && (
             <TransactionHistory
-              sessionSigs={sessionSigs$.get()}
-              currentAccount={currentAccount$.get()}
               xrplAddress={xrplAddress$.get()}
               xrplNetwork={xrplNetwork$.get()}
             />

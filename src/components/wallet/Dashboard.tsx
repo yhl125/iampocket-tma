@@ -21,18 +21,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { observable } from '@legendapp/state';
+import { syncObservable } from '@legendapp/state/sync';
 
 interface DashboardProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
   updateSessionWhenExpires: () => Promise<void>;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
 
 export default function Dashboard({
-  sessionSigs,
-  currentAccount,
   updateSessionWhenExpires,
   xrplAddress,
   xrplNetwork,
@@ -45,8 +43,19 @@ export default function Dashboard({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  
+  const currentAccount$ = observable<IRelayPKP>();
+  syncObservable(currentAccount$, {
+    persist: {
+      name: 'currentAccount',
+    },
+  });
+  const sessionSigs$ = observable<SessionSigsMap>();
+  syncObservable(sessionSigs$, {
+    persist: {
+      name: 'sessionSigs',
+    },
+  });
   useEffect(() => {
     async function fetchBalance() {
       setLoading(true);
@@ -182,7 +191,7 @@ export default function Dashboard({
           onClick={() =>
             updateSessionWhenExpires().then(() =>
               mintNft(
-                getPkpXrplWallet(sessionSigs, currentAccount),
+                getPkpXrplWallet(sessionSigs$.get(), currentAccount$.get()),
                 xrplNetwork,
               ),
             )

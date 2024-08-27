@@ -15,8 +15,6 @@ import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
 
 interface TransactionHistoryProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
@@ -34,12 +32,12 @@ const SkeletonTransaction = () => (
 );
 
 export default function TransactionHistory({
-  sessionSigs,
-  currentAccount,
   xrplAddress,
   xrplNetwork,
 }: TransactionHistoryProps) {
-  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>([]);
+  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const markerRef = useRef<unknown | undefined>(undefined);
@@ -47,7 +45,7 @@ export default function TransactionHistory({
   const initialFetchDone = useRef(false);
 
   const fetchTransactionHistory = useCallback(async () => {
-    if (!sessionSigs || !currentAccount || !xrplAddress || isLoading || !hasMore) {
+    if (!xrplAddress || isLoading || !hasMore) {
       return;
     }
 
@@ -72,7 +70,10 @@ export default function TransactionHistory({
 
       const { transactions: responseTransactions, marker: nextMarker } = result;
 
-      setTransactions((prevTransactions) => [...prevTransactions, ...responseTransactions]);
+      setTransactions((prevTransactions) => [
+        ...prevTransactions,
+        ...responseTransactions,
+      ]);
       markerRef.current = nextMarker;
       setHasMore(!!nextMarker);
     } catch (error) {
@@ -80,7 +81,7 @@ export default function TransactionHistory({
     } finally {
       setIsLoading(false);
     }
-  }, [sessionSigs, currentAccount, xrplAddress, xrplNetwork, isLoading, hasMore]);
+  }, [xrplAddress, xrplNetwork, isLoading, hasMore]);
 
   const lastTransactionElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -93,7 +94,7 @@ export default function TransactionHistory({
       });
       if (node) observer.current.observe(node);
     },
-    [isLoading, hasMore, fetchTransactionHistory]
+    [isLoading, hasMore, fetchTransactionHistory],
   );
 
   useEffect(() => {
@@ -193,19 +194,8 @@ export default function TransactionHistory({
   }
 
   function txResultsToComponet() {
-    if (!sessionSigs) {
-      throw new Error('No session sigs');
-    }
-    if (!currentAccount) {
-      throw new Error('No current account');
-    }
-    const pkpXrplWallet = new PKPXrplWallet({
-      controllerSessionSigs: sessionSigs,
-      pkpPubKey: currentAccount.publicKey,
-      litNodeClient,
-    });
     return txResults.map((transaction, index) => {
-      if (transaction.Account === pkpXrplWallet.address) {
+      if (transaction.Account === xrplAddress) {
         if (transaction.TransactionType === 'Payment') {
           return (
             <Card key={transaction.Hash || index} className="p-4">
@@ -241,7 +231,7 @@ export default function TransactionHistory({
             </Card>
           );
         }
-      } else if (transaction.Destination === pkpXrplWallet.address) {
+      } else if (transaction.Destination === xrplAddress) {
         if (transaction.TransactionType === 'Payment') {
           return (
             <Card key={transaction.Hash || index} className="p-4">

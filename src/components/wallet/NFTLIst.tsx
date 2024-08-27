@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 interface NFTListProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
