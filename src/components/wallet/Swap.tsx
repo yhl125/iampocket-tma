@@ -26,7 +26,7 @@ export const Swap = ({
   xrplAddress,
   xrplNetwork,
 }: SwapProps) => {
-  const [payAmount, setPayAmount] = useState('0');
+  const [payAmount, setPayAmount] = useState('');
   const [receiveAmount, setReceiveAmount] = useState('0');
   const [payCurrency, setPayCurrency] = useState('XRP');
   const [receiveCurrency, setReceiveCurrency] = useState('TST');
@@ -114,11 +114,24 @@ export const Swap = ({
   };
 
   const handleFlip = () => {
+    setReceiveAmount(calculateReceiveAmount(receiveAmount, receiveCurrency));
     setPayCurrency(receiveCurrency);
     setReceiveCurrency(payCurrency);
     setPayAmount(receiveAmount);
-    setReceiveAmount(payAmount);
+    
   };
+
+  function calculateReceiveAmount(payAmount: string, payCurrency: string) {
+    if (payCurrency === 'XRP') {
+      return (
+        Math.floor(Number(payAmount) / 10 / 1.15 * 1000) / 1000
+      ).toString();
+    } else {
+      return (
+        Math.floor(Number(payAmount) * 10 / 1.15 * 1000) / 1000
+      ).toString();
+    }
+  }
 
   return (
     <div className="max-w-md mx-auto p-4">
@@ -134,8 +147,12 @@ export const Swap = ({
           <div className="flex items-center space-x-2 mt-1">
             <Input
               type="number"
+              onChange={(e) => {
+                setPayAmount(e.target.value);
+                setReceiveAmount(calculateReceiveAmount(e.target.value, payCurrency));
+              }}
+              placeholder="0"
               value={payAmount}
-              onChange={(e) => setPayAmount(e.target.value)}
               className="border-gray-700"
             />
             <Badge>{payCurrency}</Badge>
@@ -165,6 +182,7 @@ export const Swap = ({
               value={receiveAmount}
               onChange={(e) => setReceiveAmount(e.target.value)}
               className="border-gray-700"
+              readOnly
             />
             <Badge>{receiveCurrency}</Badge>
           </div>

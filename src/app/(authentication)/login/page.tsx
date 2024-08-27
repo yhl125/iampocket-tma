@@ -139,7 +139,7 @@ export default function LoginPage() {
   }
 
   // If user is authenticated and has more than 1 account, show account selection
-  if (authMethod && accounts.length > 0) {
+  if (authMethod && accounts.length > 1) {
     return (
       <AccountSelection
         accounts={accounts}
