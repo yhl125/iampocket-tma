@@ -20,7 +20,7 @@ export default function LoginMethods({
   const [view, setView] = useState<AuthView>('default');
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 py-12">
+    <div className="flex items-center justify-center max-h-screen px-4 py-12">
       <div className="space-y-2 text-center">
         {error && (
           <div className="alert alert--error">

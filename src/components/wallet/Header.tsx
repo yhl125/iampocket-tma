@@ -15,7 +15,7 @@ interface HeaderProps {
 
 export default function Header({ handleLogout, xrplNetwork }: HeaderProps) {
   return (
-    <div className="flex items-center justify-between p-4">
+    <div className="flex items-center justify-between p-3 border-b">
       <div className="flex items-center space-x-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
