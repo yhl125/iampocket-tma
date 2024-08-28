@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
-import { AccountLinesTrustline } from 'xrpl';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { getXrplCilent, XrplNetwork } from '@/utils/xrpl';
 
-interface TrustLineBalance {
+export interface TrustLineBalance {
   value: string;
   currency: string;
   issuer: string;
@@ -16,12 +13,14 @@ interface TrustLineBalance {
 }
 
 interface XRPBalanceProps {
-  xrplAddress?: string;
-  xrplNetwork: XrplNetwork;
+  mainTokenBalance: string;
+  trustLineBalances: TrustLineBalance[];
+  loading: boolean;
+  error?: string;
 }
 
 const SkeletonBalance = () => (
-  <div className="border-t py-4">
+  <div className="py-4 border-t last:border-b">
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
@@ -38,83 +37,12 @@ const SkeletonBalance = () => (
   </div>
 );
 
-const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
-  const [mainTokenBalance, setMainTokenBalance] = useState('0');
-  const [trustLineBalances, setTrustLineBalances] = useState<
-    TrustLineBalance[]
-  >([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchBalance() {
-      setLoading(true);
-      try {
-        if (!xrplAddress) {
-          throw new Error('No xrpl address');
-        }
-        const client = getXrplCilent(xrplNetwork);
-        await client.connect();
-
-        const balances = await client.getBalances(xrplAddress);
-        const mainTokenBalance = balances?.find(
-          (balance) => balance.issuer === undefined,
-        );
-        let trustLineBalances = balances?.filter(
-          (balance) => balance.issuer !== undefined,
-        ) as TrustLineBalance[];
-
-        const accountLines = await client.request({
-          command: 'account_lines',
-          account: xrplAddress,
-        });
-
-        if (accountLines?.result?.lines) {
-          trustLineBalances = trustLineBalances
-            .map((trustlineBalance) => {
-              const trustlineDetails = accountLines.result.lines.find(
-                (line: AccountLinesTrustline) =>
-                  line.currency === trustlineBalance.currency &&
-                  line.account === trustlineBalance.issuer,
-              );
-
-              return {
-                ...trustlineBalance,
-                trustlineDetails:
-                  trustlineDetails && Number(trustlineDetails.limit)
-                    ? {
-                        limit: Number(trustlineDetails.limit),
-                        noRipple: trustlineDetails.no_ripple === true,
-                      }
-                    : undefined,
-              };
-            })
-            .filter(
-              (trustlineBalance) =>
-                trustlineBalance.trustlineDetails ||
-                trustlineBalance.value !== '0',
-            ); // Hide revoked trustlines with a balance of 0
-        }
-
-        if (mainTokenBalance) {
-          setMainTokenBalance(mainTokenBalance.value);
-        }
-        if (trustLineBalances) {
-          setTrustLineBalances(trustLineBalances);
-        }
-      } catch (err) {
-        console.error(err);
-        if (err instanceof Error && err.message == 'Account not found.') {
-          setMainTokenBalance('0');
-        }
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBalance();
-  }, [xrplAddress, xrplNetwork]);
-
+const TokenBalance = ({
+  mainTokenBalance,
+  trustLineBalances,
+  loading,
+  error,
+}: XRPBalanceProps) => {
   if (loading) {
     return (
       <>
@@ -152,38 +80,38 @@ const TokenBalance = ({ xrplAddress, xrplNetwork }: XRPBalanceProps) => {
           </div>
         </div>
       </div>
-      <div className="border-y py-4">
-        {trustLineBalances.map((line, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarFallback className="border-2">
-                  {line.currency}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-semibold">
-                  {line.currency}
-                </div>
-                <div className="text-muted-foreground">
-                  {line.value} {line.currency}
+      {trustLineBalances.length !== 0 && (
+        <div className="border-b py-4">
+          {trustLineBalances.map((line, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Avatar>
+                  <AvatarFallback className="border-2">
+                    {line.currency}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold">{line.currency}</div>
+                  <div className="text-muted-foreground">
+                    {line.value} {line.currency}
+                  </div>
                 </div>
               </div>
+              <div className="text-right">
+                <div className="font-semibold">$0</div>
+                <Badge variant="destructive">0%</Badge>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="font-semibold">$0</div>
-              <Badge variant="destructive">0%</Badge>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </>
   );
 };
 
 export default TokenBalance;
 
-function CheckIcon(props: any) {
+export function CheckIcon(props: any) {
   return (
     <svg
       {...props}

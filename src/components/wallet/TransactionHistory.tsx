@@ -15,31 +15,29 @@ import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
 
 interface TransactionHistoryProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
 
 const SkeletonTransaction = () => (
-  <Card className="p-4 mb-4">
+  <div className="py-4 animate-pulse">
     <div className="flex items-center space-x-2">
       <div className="flex-1">
-        <div className="h-5 bg-gray-200 rounded w-20 mb-2 animate-pulse" />
-        <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
+        <div className="h-5 bg-muted rounded w-20 mb-2" />
+        <div className="h-4 bg-muted rounded w-32" />
       </div>
-      <div className="h-5 bg-gray-200 rounded w-24 animate-pulse" />
+      <div className="h-5 bg-muted rounded w-24" />
     </div>
-  </Card>
+  </div>
 );
 
 export default function TransactionHistory({
-  sessionSigs,
-  currentAccount,
   xrplAddress,
   xrplNetwork,
 }: TransactionHistoryProps) {
-  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>([]);
+  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const markerRef = useRef<unknown | undefined>(undefined);
@@ -47,7 +45,7 @@ export default function TransactionHistory({
   const initialFetchDone = useRef(false);
 
   const fetchTransactionHistory = useCallback(async () => {
-    if (!sessionSigs || !currentAccount || !xrplAddress || isLoading || !hasMore) {
+    if (!xrplAddress || isLoading || !hasMore) {
       return;
     }
 
@@ -72,7 +70,10 @@ export default function TransactionHistory({
 
       const { transactions: responseTransactions, marker: nextMarker } = result;
 
-      setTransactions((prevTransactions) => [...prevTransactions, ...responseTransactions]);
+      setTransactions((prevTransactions) => [
+        ...prevTransactions,
+        ...responseTransactions,
+      ]);
       markerRef.current = nextMarker;
       setHasMore(!!nextMarker);
     } catch (error) {
@@ -80,7 +81,7 @@ export default function TransactionHistory({
     } finally {
       setIsLoading(false);
     }
-  }, [sessionSigs, currentAccount, xrplAddress, xrplNetwork, isLoading, hasMore]);
+  }, [xrplAddress, xrplNetwork, isLoading, hasMore]);
 
   const lastTransactionElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -93,7 +94,7 @@ export default function TransactionHistory({
       });
       if (node) observer.current.observe(node);
     },
-    [isLoading, hasMore, fetchTransactionHistory]
+    [isLoading, hasMore, fetchTransactionHistory],
   );
 
   useEffect(() => {
@@ -192,102 +193,52 @@ export default function TransactionHistory({
     return '';
   }
 
-  function txResultsToComponet() {
-    if (!sessionSigs) {
-      throw new Error('No session sigs');
-    }
-    if (!currentAccount) {
-      throw new Error('No current account');
-    }
-    const pkpXrplWallet = new PKPXrplWallet({
-      controllerSessionSigs: sessionSigs,
-      pkpPubKey: currentAccount.publicKey,
-      litNodeClient,
-    });
+  function txResultsToComponent() {
     return txResults.map((transaction, index) => {
-      if (transaction.Account === pkpXrplWallet.address) {
-        if (transaction.TransactionType === 'Payment') {
-          return (
-            <Card key={transaction.Hash || index} className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="flex-1">
-                  <div className="font-semibold">Sent</div>
-                  <div className="text-sm text-muted-foreground">
-                    To {truncateAddress(transaction.Destination!)}
-                  </div>
+      const isOutgoing = transaction.Account === xrplAddress;
+      const transactionType = isOutgoing ? 'Sent' : 'Received';
+      const counterpartyAddress = isOutgoing
+        ? transaction.Destination
+        : transaction.Account;
+      const amountColor = isOutgoing ? 'text-red-500' : 'text-green-500';
+      const amountPrefix = isOutgoing ? '-' : '+';
+
+      return (
+        <div
+          key={transaction.Hash || index}
+          // onClick={transaction detail page}
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+        >
+          {index > 0 && <div className="border-t border-border my-2" />}
+          <div className="py-2">
+            <div className="flex items-center space-x-2">
+              <div className="flex-1">
+                <div className="text-lg font-semibold">
+                  {transaction.TransactionType === 'Payment'
+                    ? transactionType
+                    : transaction.TransactionType}
                 </div>
-                <div className="text-red-500">
-                  -{renderAmount(transaction.delivered)}
-                </div>
-              </div>
-            </Card>
-          );
-        } else {
-          return (
-            <Card key={transaction.Hash || index} className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="flex-1">
-                  <div className="font-semibold">
-                    {transaction.TransactionType}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    To {truncateAddress(transaction.Destination ?? '')}
-                  </div>
-                </div>
-                <div className="text-red-500">
-                  -{renderAmount(transaction.delivered)}
+                <div className="text-sm text-muted-foreground">
+                  {isOutgoing ? 'To' : 'From'}{' '}
+                  {truncateAddress(counterpartyAddress || '')}
                 </div>
               </div>
-            </Card>
-          );
-        }
-      } else if (transaction.Destination === pkpXrplWallet.address) {
-        if (transaction.TransactionType === 'Payment') {
-          return (
-            <Card key={transaction.Hash || index} className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="flex-1">
-                  <div className="font-semibold">Received</div>
-                  <div className="text-sm text-muted-foreground">
-                    From {truncateAddress(transaction.Account)}
-                  </div>
-                </div>
-                <div className="text-green-500">
-                  +{renderAmount(transaction.delivered)}
-                </div>
+              <div className={`${amountColor} font-medium`}>
+                {amountPrefix}
+                {renderAmount(transaction.delivered)}
               </div>
-            </Card>
-          );
-        } else {
-          return (
-            <Card key={transaction.Hash || index} className="p-4">
-              <div className="flex items-center space-x-2">
-                <div className="flex-1">
-                  <div className="font-semibold">
-                    {transaction.TransactionType}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    From {truncateAddress(transaction.Account)}
-                  </div>
-                </div>
-                <div className="text-green-500">
-                  +{renderAmount(transaction.delivered)}
-                </div>
-              </div>
-            </Card>
-          );
-        }
-      } else {
-        throw new Error('Invalid transaction');
-      }
+            </div>
+          </div>
+        </div>
+      );
     });
   }
 
   return (
-    <>
-      <h1 className="text-2xl font-bold mb-4 text-gray-800 px-6">My History</h1>
-      <div>
-        {txResultsToComponet()}
+    <div className="w-full max-w-md mx-auto px-6 space-y-4">
+      <h1 className="text-2xl font-bold text-foreground">My History</h1>
+      <div className="space-y-0">
+        {txResultsToComponent()}
         {isLoading && (
           <>
             <SkeletonTransaction />
@@ -297,6 +248,6 @@ export default function TransactionHistory({
         )}
         <div ref={lastTransactionElementRef} />
       </div>
-    </>
+    </div>
   );
 }

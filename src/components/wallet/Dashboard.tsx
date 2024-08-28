@@ -1,41 +1,131 @@
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import {
   getPkpXrplWallet,
+  getXrplCilent,
   mintNft,
   truncateAddress,
   xrplFaucet,
   XrplNetwork,
 } from '@/utils/xrpl';
-import TokenBalance from './TokenBalance';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import TokenBalance, { TrustLineBalance } from './TokenBalance';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { useState, useEffect } from 'react';
+import { AccountLinesTrustline } from 'xrpl';
+import SelectToken from './send/SelectToken';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { observable } from '@legendapp/state';
+import { syncObservable } from '@legendapp/state/sync';
 
 interface DashboardProps {
-  sessionSigs?: SessionSigsMap;
-  currentAccount?: IRelayPKP;
   updateSessionWhenExpires: () => Promise<void>;
-  handleLogout: () => void;
   xrplAddress?: string;
   xrplNetwork: XrplNetwork;
 }
 
 export default function Dashboard({
-  sessionSigs,
-  currentAccount,
   updateSessionWhenExpires,
-  handleLogout,
   xrplAddress,
   xrplNetwork,
 }: DashboardProps) {
   const { toast } = useToast();
+  // fetch balance
+  const [mainTokenBalance, setMainTokenBalance] = useState('0');
+  const [trustLineBalances, setTrustLineBalances] = useState<
+    TrustLineBalance[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>();
+
+  const currentAccount$ = observable<IRelayPKP>();
+  syncObservable(currentAccount$, {
+    persist: {
+      name: 'currentAccount',
+    },
+  });
+  const sessionSigs$ = observable<SessionSigsMap>();
+  syncObservable(sessionSigs$, {
+    persist: {
+      name: 'sessionSigs',
+    },
+  });
+  useEffect(() => {
+    async function fetchBalance() {
+      setLoading(true);
+      try {
+        if (!xrplAddress) {
+          throw new Error('No xrpl address');
+        }
+        const client = getXrplCilent(xrplNetwork);
+        await client.connect();
+
+        const balances = await client.getBalances(xrplAddress);
+        const mainTokenBalance = balances?.find(
+          (balance) => balance.issuer === undefined,
+        );
+        let trustLineBalances = balances?.filter(
+          (balance) => balance.issuer !== undefined,
+        ) as TrustLineBalance[];
+
+        const accountLines = await client.request({
+          command: 'account_lines',
+          account: xrplAddress,
+        });
+
+        if (accountLines?.result?.lines) {
+          trustLineBalances = trustLineBalances
+            .map((trustlineBalance) => {
+              const trustlineDetails = accountLines.result.lines.find(
+                (line: AccountLinesTrustline) =>
+                  line.currency === trustlineBalance.currency &&
+                  line.account === trustlineBalance.issuer,
+              );
+
+              return {
+                ...trustlineBalance,
+                trustlineDetails:
+                  trustlineDetails && Number(trustlineDetails.limit)
+                    ? {
+                        limit: Number(trustlineDetails.limit),
+                        noRipple: trustlineDetails.no_ripple === true,
+                      }
+                    : undefined,
+              };
+            })
+            .filter(
+              (trustlineBalance) =>
+                trustlineBalance.trustlineDetails ||
+                trustlineBalance.value !== '0',
+            ); // Hide revoked trustlines with a balance of 0
+        }
+
+        if (mainTokenBalance) {
+          setMainTokenBalance(mainTokenBalance.value);
+        }
+        if (trustLineBalances) {
+          setTrustLineBalances(trustLineBalances);
+        }
+      } catch (err) {
+        console.error(err);
+        if (err instanceof Error && err.message == 'Account not found.') {
+          setMainTokenBalance('0');
+        } else {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBalance();
+  }, [xrplAddress, xrplNetwork]);
 
   const handleCopyButton = (text: string) => {
     navigator.clipboard.writeText(text).then(
@@ -60,9 +150,9 @@ export default function Dashboard({
         <div className="text-muted-foreground">
           {truncateAddress(xrplAddress ?? '')}
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="inline-flex items-center justify-center w-8 h-8 text-muted-foreground hover:bg-muted hover:text-muted-foreground"
+            className="ml-2 w-8 h-8"
             onClick={() => handleCopyButton(xrplAddress ?? '')}
           >
             <CopyIcon className="w-4 h-4" />
@@ -71,16 +161,48 @@ export default function Dashboard({
         </div>
       </div>
       <div className="flex justify-center space-x-2 mb-4">
-        <Button onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}>
+        <Button
+          variant="outline"
+          className="w-full border border-muted"
+          onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}
+        >
           Faucet
         </Button>
         {/* <Button>Receive</Button> */}
-        <Button>Send</Button>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full border border-muted">
+              Send
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[calc(100vh-4rem)] pt-6">
+            <div className="h-full relative pb-16">
+              <SheetHeader>
+                <SheetTitle className="hidden">Send Token</SheetTitle>
+                <SheetDescription></SheetDescription>
+              </SheetHeader>
+              <div>
+                <SelectToken
+                  mainTokenBalance={mainTokenBalance}
+                  trustLineBalances={trustLineBalances}
+                  updateSessionWhenExpires={updateSessionWhenExpires}
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0">
+                <SheetClose asChild>
+                  <Button className="w-full" variant="outline" >Close</Button>
+                </SheetClose>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
         <Button
+          variant="outline"
+          className="w-full border border-muted"
           onClick={() =>
             updateSessionWhenExpires().then(() =>
               mintNft(
-                getPkpXrplWallet(sessionSigs, currentAccount),
+                getPkpXrplWallet(sessionSigs$.get(), currentAccount$.get()),
                 xrplNetwork,
               ),
             )
@@ -89,7 +211,12 @@ export default function Dashboard({
           Mint NFT
         </Button>
       </div>
-      <TokenBalance xrplAddress={xrplAddress} xrplNetwork={xrplNetwork} />
+      <TokenBalance
+        mainTokenBalance={mainTokenBalance}
+        trustLineBalances={trustLineBalances}
+        loading={loading}
+        error={error}
+      />
     </div>
   );
 }

@@ -5,7 +5,9 @@ import {
   convertStringToHex,
   FundingOptions,
   getBalanceChanges,
+  NFTokenMint,
   OfferCreate,
+  Payment,
   TransactionMetadata,
   XRPLFaucetError,
 } from 'xrpl';
@@ -245,7 +247,7 @@ export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
     `${iampocketRelayServer}/nft/maru-sleeping`,
     `${iampocketRelayServer}/nft/maru-glasses`,
   ];
-  const prepared = await client.autofill({
+  const mintNftTx: NFTokenMint = {
     TransactionType: 'NFTokenMint',
     Account: pkpWallet.classicAddress,
     NFTokenTaxon: 0,
@@ -253,7 +255,9 @@ export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
     URI: convertStringToHex(
       nftUrls[Math.floor(Math.random() * nftUrls.length)],
     ),
-  });
+  };
+  const prepared = await client.autofill(mintNftTx);
+  prepared.LastLedgerSequence = (await client.getLedgerIndex()) + 20;
   const signed = await pkpWallet.sign(prepared);
   const tx = await client.submitAndWait(signed.tx_blob);
   await client.disconnect();
@@ -369,6 +373,7 @@ export async function swap(
   };
 
   const prepared = await client.autofill(offerCreateTx);
+  prepared.LastLedgerSequence = (await client.getLedgerIndex()) + 20;
   const signed = await pkpWallet.sign(prepared);
   const result = await client.submitAndWait(signed.tx_blob);
 
@@ -393,5 +398,22 @@ export async function swap(
     JSON.stringify(balanceChanges, null, 2),
   );
 
+  return result;
+}
+
+export async function sendXrplToken(
+  pkpWallet: PKPXrplWallet,
+  network: XrplNetwork,
+  payment: Payment,
+) {
+  const client = getXrplCilent(network);
+  await client.connect();
+
+  const prepared = await client.autofill(payment);
+  prepared.LastLedgerSequence = (await client.getLedgerIndex()) + 20;
+  const signed = await pkpWallet.sign(prepared);
+  const result = await client.submitAndWait(signed.tx_blob);
+  await client.disconnect();
+  console.log('Payment:', result);
   return result;
 }
