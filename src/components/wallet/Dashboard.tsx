@@ -15,6 +15,7 @@ import { AccountLinesTrustline } from 'xrpl';
 import SelectToken from './send/SelectToken';
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -174,16 +175,25 @@ export default function Dashboard({
               Send
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[calc(100vh-4.5rem)] pt-6">
-            <SheetHeader>
-              <SheetTitle>Send Token</SheetTitle>
-              <SheetDescription>Send Token</SheetDescription>
-            </SheetHeader>
-            <SelectToken
-              mainTokenBalance={mainTokenBalance}
-              trustLineBalances={trustLineBalances}
-              updateSessionWhenExpires={updateSessionWhenExpires}
-            />
+          <SheetContent side="bottom" className="h-[calc(100vh-4rem)] pt-6">
+            <div className="h-full relative pb-16">
+              <SheetHeader>
+                <SheetTitle className="hidden">Send Token</SheetTitle>
+                <SheetDescription></SheetDescription>
+              </SheetHeader>
+              <div>
+                <SelectToken
+                  mainTokenBalance={mainTokenBalance}
+                  trustLineBalances={trustLineBalances}
+                  updateSessionWhenExpires={updateSessionWhenExpires}
+                />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0">
+                <SheetClose asChild>
+                  <Button className="w-full" variant="outline" >Close</Button>
+                </SheetClose>
+              </div>
+            </div>
           </SheetContent>
         </Sheet>
         <Button
