@@ -218,78 +218,92 @@ export const Swap = ({
   }
 
   return (
-    <div className="px-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full max-w-md mx-auto space-y-6 p-6">
+      <h2 className="text-2xl font-bold text-foreground">Swap</h2>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-muted-foreground">
+          You Pay
+        </label>
         <div className="flex items-center space-x-2">
-          <span className="text-2xl font-bold mb-4 text-gray-800">Swap</span>
+          <Input
+            type="number"
+            onChange={(e) => {
+              setPayAmount(e.target.value);
+              setReceiveAmount(
+                calculateReceiveAmount(e.target.value, payCurrency),
+              );
+            }}
+            placeholder="0"
+            value={payAmount}
+            className="flex-grow bg-background text-foreground border-input"
+          />
+          <Badge
+            variant="secondary"
+            className="text-secondary-foreground bg-secondary"
+          >
+            {payCurrency}
+          </Badge>
+        </div>
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>
+            Balance: {payCurrency === 'XRP' ? xrpBalance : testBalance}{' '}
+            <span className="font-semibold pl-1">{payCurrency}</span>
+          </span>
         </div>
       </div>
-      <div className="space-y-4 max-w-md mx-auto ">
-        <div>
-          <label className="text-sm text-gray-400">You Pay</label>
-          <div className="flex items-center space-x-2 mt-1">
-            <Input
-              type="number"
-              onChange={(e) => {
-                setPayAmount(e.target.value);
-                setReceiveAmount(
-                  calculateReceiveAmount(e.target.value, payCurrency),
-                );
-              }}
-              placeholder="0"
-              value={payAmount}
-              className="border-gray-700"
-            />
-            <Badge>{payCurrency}</Badge>
-          </div>
-          <div className="flex justify-between text-sm text-gray-400 mt-1">
-            <span>
-              Balance: {payCurrency === 'XRP' ? xrpBalance : testBalance}{' '}
-              {payCurrency}
-            </span>
-          </div>
+
+      <div className="relative py-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border"></div>
         </div>
-
-        <Button
-          onClick={handleFlip}
-          variant="ghost"
-          size="icon"
-          className="w-full"
-        >
-          <ArrowDownUp className="h-4 w-4" />
-        </Button>
-
-        <div>
-          <label className="text-sm text-gray-400">You Receive</label>
-          <div className="flex items-center space-x-2 mt-1">
-            <Input
-              type="number"
-              value={receiveAmount}
-              onChange={(e) => setReceiveAmount(e.target.value)}
-              className="border-gray-700"
-              readOnly
-            />
-            <Badge>{receiveCurrency}</Badge>
-          </div>
-          <div className="flex justify-between text-sm text-gray-400 mt-1">
-            <span>
-              Balance: {receiveCurrency === 'XRP' ? xrpBalance : testBalance}{' '}
-              {receiveCurrency}
-            </span>
-          </div>
+        <div className="relative flex justify-center">
+          <Button
+            onClick={handleFlip}
+            variant="outline"
+            size="icon"
+            className="bg-background hover:bg-accent hover:text-accent-foreground"
+          >
+            <ArrowDownUp className="h-4 w-4" />
+          </Button>
         </div>
-
-        <Button
-          onClick={handleSwap}
-          className="w-full bg-blue-600 hover:bg-blue-700"
-          disabled={isLoading || !xrplAddress}
-        >
-          {isLoading ? (
-            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          {isLoading ? 'Swapping...' : 'Swap'}
-        </Button>
       </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-muted-foreground">
+          You Receive
+        </label>
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={receiveAmount}
+            onChange={(e) => setReceiveAmount(e.target.value)}
+            className="flex-grow bg-background text-foreground border-input"
+            readOnly
+          />
+          <Badge
+            variant="secondary"
+            className="text-secondary-foreground bg-secondary"
+          >
+            {receiveCurrency}
+          </Badge>
+        </div>
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>
+            Balance: {receiveCurrency === 'XRP' ? xrpBalance : testBalance}
+            <span className="font-semibold pl-1">{receiveCurrency}</span>
+          </span>
+        </div>
+      </div>
+
+      <Button
+        onClick={handleSwap}
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+        disabled={isLoading || !xrplAddress}
+      >
+        {isLoading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
+        {isLoading ? 'Swapping...' : 'Swap'}
+      </Button>
     </div>
   );
 };
