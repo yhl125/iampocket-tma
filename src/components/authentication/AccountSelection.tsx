@@ -28,7 +28,7 @@ export default function AccountSelection({
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="max-w-md mx-auto p-6">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-center">Choose your account</h1>
         <p className="text-center text-gray-600">

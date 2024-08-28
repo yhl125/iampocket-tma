@@ -1,6 +1,6 @@
 import { TrustLineBalance } from '@/components/wallet/TokenBalance';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, AtSign, DollarSign } from 'lucide-react';
+import { ArrowLeft, AtSign, DollarSign, SendHorizontal } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import { observable } from '@legendapp/state';
 import { syncObservable } from '@legendapp/state/sync';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { IssuedCurrencyAmount, Payment, xrpToDrops } from 'xrpl';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface SelectTokenProps {
   token: TrustLineBalance | string;
@@ -167,24 +168,37 @@ const SendToken = ({
     setView('select');
   };
 
+  const isXRP = token === 'XRP';
+
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-card text-card-foreground">
       <Button
         variant="ghost"
-        className="absolute top-4 left-4 p-1 rounded-full"
+        className="absolute top-4 left-4 p-1 rounded-full text-muted-foreground hover:text-foreground"
         onClick={handleBackClick}
       >
         <ArrowLeft className="h-4 w-4" />
       </Button>
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-normal text-center">
+        <CardTitle className="text-xl font-normal text-center text-foreground">
           Send {getTokenName(token)}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16rounded-full flex items-center justify-center">
-            <DollarSign size={32} />
+        <div className="flex justify-center items-center mb-6">
+          <div className="relative inline-flex items-center justify-center">
+            <Avatar className="border border-border size-20 p-3 bg-background">
+              {isXRP ? (
+                <AvatarImage src="/xrp.svg" alt="XRP Icon" />
+              ) : (
+                <AvatarFallback className="bg-transparent text-2xl font-semibold text-foreground">
+                  {typeof token === 'string' ? token : token.currency}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div className="absolute -bottom-2 -right-2 bg-secondary rounded-full p-1.5">
+              <SendHorizontal className="size-5 text-primary" />
+            </div>
           </div>
         </div>
 
@@ -193,20 +207,20 @@ const SendToken = ({
             placeholder="Recipient's Solana address"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
-            className="pl-3 pr-10 py-2  rounded"
+            className="pl-3 pr-10 py-2 rounded bg-background text-foreground border-input"
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
               >
-                <AtSign className="h-5 w-5 text-purple-400" />
+                <AtSign className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-[calc(100%-2rem)]rounded-md mt-1"
-              align="start"
+              className="w-full rounded-md mt-1 bg-popover text-popover-foreground"
+              align="end"
               side="bottom"
               sideOffset={5}
             >
@@ -214,12 +228,14 @@ const SendToken = ({
                 <DropdownMenuItem
                   key={index}
                   onSelect={() => handleAddressSelect(entry.address)}
-                  className="py-2"
+                  className="py-2 px-3 hover:bg-accent hover:text-accent-foreground cursor-pointer"
                 >
-                  <span>{entry.name}</span>
-                  <span className="ml-auto">
-                    {truncateAddress(entry.address)}
-                  </span>
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-medium pr-3">{entry.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {truncateAddress(entry.address)}
+                    </span>
+                  </div>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -231,22 +247,22 @@ const SendToken = ({
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="pl-3 pr-24 py-2rounded"
+            className="pl-3 pr-24 py-2 rounded bg-background text-foreground border-input"
           />
           <div className="absolute right-2 flex items-center">
-            <span className="mr-2">{getTokenName(token)}</span>
+            <span className="mr-2 text-foreground">{getTokenName(token)}</span>
             <Button
               variant="secondary"
               size="sm"
               onClick={handleMaxClick}
-              className="h-7 px-2 text-xs bg-gray-800 text-white hover:bg-gray-700"
+              className="h-7 px-2 text-xs bg-secondary text-secondary-foreground hover:bg-secondary/80"
             >
               Max
             </Button>
           </div>
         </div>
 
-        <div className="flex justify-between text-sm text-gray-400">
+        <div className="flex justify-between text-sm text-muted-foreground">
           <span>$0.00</span>
           {availableAmount ? (
             <span>
@@ -260,14 +276,14 @@ const SendToken = ({
         <div className="flex space-x-2 pt-4">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 border-input text-foreground hover:bg-accent hover:text-accent-foreground"
             onClick={() => setView('select')}
           >
             Cancel
           </Button>
           <Button
             variant="default"
-            className="flex-1"
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => sendToken(token, recipient, amount)}
           >
             Confirm
