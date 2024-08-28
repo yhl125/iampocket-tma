@@ -1,17 +1,12 @@
-import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { litNodeClient } from '@/utils/lit';
-import { PKPXrplWallet } from 'pkp-xrpl';
 import {
   TransactionMetadata,
-  Client,
   dropsToXrp,
   AccountTxRequest,
   AccountTxTransaction,
   Amount,
   convertHexToString,
 } from 'xrpl';
-import { Card } from '../ui/card';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
 
 interface TransactionHistoryProps {
@@ -31,13 +26,18 @@ const SkeletonTransaction = () => (
   </div>
 );
 
+interface GroupedTransaction {
+  date: string;
+  transactions: AccountTxTransaction<2>[];
+}
+
 export default function TransactionHistory({
   xrplAddress,
   xrplNetwork,
 }: TransactionHistoryProps) {
-  const [transactions, setTransactions] = useState<AccountTxTransaction<2>[]>(
-    [],
-  );
+  const [groupedTransactions, setGroupedTransactions] = useState<
+    GroupedTransaction[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const markerRef = useRef<unknown | undefined>(undefined);
@@ -70,10 +70,45 @@ export default function TransactionHistory({
 
       const { transactions: responseTransactions, marker: nextMarker } = result;
 
-      setTransactions((prevTransactions) => [
-        ...prevTransactions,
-        ...responseTransactions,
-      ]);
+      const groupTransactionsByDate = (
+        transactions: AccountTxTransaction<2>[],
+      ) => {
+        const grouped: { [key: string]: AccountTxTransaction<2>[] } = {};
+        transactions.forEach((tx) => {
+          const date = new Date((tx as any).close_time_iso);
+          const dateString = formatDate(date);
+          if (!grouped[dateString]) {
+            grouped[dateString] = [];
+          }
+          grouped[dateString].push(tx);
+        });
+        return Object.entries(grouped).map(([date, txs]) => ({
+          date,
+          transactions: txs,
+        }));
+      };
+
+      const newGroupedTransactions =
+        groupTransactionsByDate(responseTransactions);
+
+      setGroupedTransactions((prevGrouped) => {
+        const updatedGrouped = [...prevGrouped];
+        newGroupedTransactions.forEach((newGroup) => {
+          const existingGroupIndex = updatedGrouped.findIndex(
+            (group) => group.date === newGroup.date,
+          );
+          if (existingGroupIndex !== -1) {
+            updatedGrouped[existingGroupIndex].transactions.push(
+              ...newGroup.transactions,
+            );
+          } else {
+            updatedGrouped.push(newGroup);
+          }
+        });
+        return updatedGrouped.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
+      });
       markerRef.current = nextMarker;
       setHasMore(!!nextMarker);
     } catch (error) {
@@ -82,6 +117,24 @@ export default function TransactionHistory({
       setIsLoading(false);
     }
   }, [xrplAddress, xrplNetwork, isLoading, hasMore]);
+
+  const formatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+  };
 
   const lastTransactionElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -103,53 +156,6 @@ export default function TransactionHistory({
       initialFetchDone.current = true;
     }
   }, [fetchTransactionHistory]);
-
-  const txResults = transactions.map((transaction) => {
-    const tx_json = transaction.tx_json!;
-    const meta = transaction.meta as TransactionMetadata;
-
-    switch (tx_json.TransactionType) {
-      // Destination: Account
-      case 'Payment' ||
-        'PaymentChannelCreate' ||
-        'XChainAccountCreateCommit' ||
-        'XChainAddAccountCreateAttestation' ||
-        'XChainClaim' ||
-        'AccountDelete' ||
-        'CheckCreate' ||
-        'EscrowCreate':
-        return {
-          Account: tx_json.Account,
-          Destination: tx_json.Destination,
-          Fee: tx_json.Fee,
-          Hash: tx_json.hash,
-          TransactionType: tx_json.TransactionType,
-          result: meta.TransactionResult,
-          delivered: meta.delivered_amount,
-        };
-      // Destination?: Account
-      case 'NFTokenCreateOffer' || 'XChainAddClaimAttestation':
-        return {
-          Account: tx_json.Account,
-          Destination: tx_json.Destination,
-          Fee: tx_json.Fee,
-          Hash: tx_json.hash,
-          TransactionType: tx_json.TransactionType,
-          result: meta.TransactionResult,
-          delivered: meta.delivered_amount,
-        };
-      // Destination not exists
-      default:
-        return {
-          Account: tx_json.Account,
-          Fee: tx_json.Fee,
-          Hash: tx_json.hash,
-          TransactionType: tx_json.TransactionType,
-          result: meta.TransactionResult,
-          delivered: meta.delivered_amount,
-        };
-    }
-  });
 
   function renderAmount(delivered: Amount | undefined) {
     if (!delivered) {
@@ -193,52 +199,58 @@ export default function TransactionHistory({
     return '';
   }
 
-  function txResultsToComponent() {
-    return txResults.map((transaction, index) => {
-      const isOutgoing = transaction.Account === xrplAddress;
-      const transactionType = isOutgoing ? 'Sent' : 'Received';
-      const counterpartyAddress = isOutgoing
-        ? transaction.Destination
-        : transaction.Account;
-      const amountColor = isOutgoing ? 'text-red-500' : 'text-green-500';
-      const amountPrefix = isOutgoing ? '-' : '+';
+  function groupedTransactionsToComponent() {
+    return groupedTransactions.map((group, groupIndex) => (
+      <div key={group.date}>
+        <h2 className="text-lg font-semibold text-muted-foreground mt-2">{group.date}</h2>
+        {group.transactions.map((transaction, index) => {
+          const tx_json = transaction.tx_json!;
+          const meta = transaction.meta as TransactionMetadata;
+          const isOutgoing = tx_json.Account === xrplAddress;
+          const transactionType = isOutgoing ? 'Sent' : 'Received';
+          const counterpartyAddress = isOutgoing
+            ? (tx_json as any).Destination
+            : tx_json.Account;
+          const amountColor = isOutgoing ? 'text-red-500' : 'text-green-500';
+          const amountPrefix = isOutgoing ? '-' : '+';
 
-      return (
-        <div
-          key={transaction.Hash || index}
-          // onClick={transaction detail page}
-          className="cursor-pointer hover:bg-muted/50 transition-colors"
-        >
-          {index > 0 && <div className="border-t border-border my-2" />}
-          <div className="py-2">
-            <div className="flex items-center space-x-2">
-              <div className="flex-1">
-                <div className="text-lg font-semibold">
-                  {transaction.TransactionType === 'Payment'
-                    ? transactionType
-                    : transaction.TransactionType}
+          return (
+            <div
+              key={tx_json.hash || index}
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+            >
+              {index > 0 && <div className="border-t border-border my-2" />}
+              <div className="py-2">
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1">
+                    <div className="text-lg font-semibold">
+                      {tx_json.TransactionType === 'Payment'
+                        ? transactionType
+                        : tx_json.TransactionType}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {isOutgoing ? 'To' : 'From'}{' '}
+                      {truncateAddress(counterpartyAddress || '')}
+                    </div>
+                  </div>
+                  <div className={`${amountColor} font-medium`}>
+                    {amountPrefix}
+                    {renderAmount(meta.delivered_amount)}
+                  </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {isOutgoing ? 'To' : 'From'}{' '}
-                  {truncateAddress(counterpartyAddress || '')}
-                </div>
-              </div>
-              <div className={`${amountColor} font-medium`}>
-                {amountPrefix}
-                {renderAmount(transaction.delivered)}
               </div>
             </div>
-          </div>
-        </div>
-      );
-    });
+          );
+        })}
+      </div>
+    ));
   }
 
   return (
     <div className="w-full max-w-md mx-auto px-6 space-y-4">
       <h1 className="text-2xl font-bold text-foreground">My History</h1>
       <div className="space-y-0">
-        {txResultsToComponent()}
+        {groupedTransactionsToComponent()}
         {isLoading && (
           <>
             <SkeletonTransaction />
