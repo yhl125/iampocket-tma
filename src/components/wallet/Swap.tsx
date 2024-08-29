@@ -200,10 +200,10 @@ export const Swap = ({
   };
 
   const handleFlip = () => {
-      setPayCurrency(receiveCurrency);
-      setReceiveCurrency(payCurrency);
-      setPayAmount('');
-      setReceiveAmount('0');
+    setPayCurrency(receiveCurrency);
+    setReceiveCurrency(payCurrency);
+    setPayAmount('');
+    setReceiveAmount('0');
   };
 
   function calculateReceiveAmount(payAmount: string, payCurrency: string) {
@@ -218,7 +218,10 @@ export const Swap = ({
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<string>>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
     const value = e.target.value;
     if (/^\d*\.?\d*$/.test(value)) {
       setter(value);

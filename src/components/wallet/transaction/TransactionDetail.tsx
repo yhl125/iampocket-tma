@@ -36,7 +36,7 @@ const TransactionDetail = ({
   };
 
   return (
-    <div className="space-y-4 text-sm">
+    <div className="space-y-6 text-base">
       <div className="flex justify-between items-center">
         <div className="text-2xl font-bold">
           {tx_json.TransactionType === 'Payment'
@@ -45,19 +45,19 @@ const TransactionDetail = ({
         </div>
       </div>
 
-      <div className="text-3xl font-bold text-center">
+      <div className="text-4xl font-bold text-center">
         {isOutgoing ? '-' : '+'}
         {renderAmount()}
       </div>
 
-      <div className="space-y-2">
-        <div className="flex justify-between">
+      <div className="space-y-3">
+        <div className="flex justify-between text-lg">
           <span className="text-muted-foreground">Date</span>
           <span>
             {new Date((transaction as any).close_time_iso).toLocaleString()}
           </span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-lg">
           <span className="text-muted-foreground">Status</span>
           {meta.TransactionResult === 'tesSUCCESS' ? (
             <span className="text-green-500">Succeeded</span>
@@ -66,18 +66,18 @@ const TransactionDetail = ({
           )}
         </div>
         {counterpartyAddress ? (
-          <div className="flex justify-between">
+          <div className="flex justify-between text-lg">
             <span className="text-muted-foreground">
               {isOutgoing ? 'To' : 'From'}
             </span>
             <span>{truncateAddress(counterpartyAddress)}</span>
           </div>
         ) : undefined}
-        <div className="flex justify-between">
+        <div className="flex justify-between text-lg">
           <span className="text-muted-foreground">Network</span>
           <span>XRPL {xrplNetwork}</span>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between text-lg">
           <span className="text-muted-foreground">Network Fee</span>
           <span>-{(tx_json as any).Fee / 1000000} XRP</span>
         </div>
@@ -85,7 +85,7 @@ const TransactionDetail = ({
 
       <Button
         variant="link"
-        className="w-full text-primary"
+        className="w-full text-primary text-lg"
         onClick={handleViewOnExplorer}
       >
         View on XRPL Explorer
