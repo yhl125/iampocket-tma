@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { ArrowDownUp, RefreshCw } from 'lucide-react';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import {
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { AccountLinesTrustline, xrpToDrops } from 'xrpl';
 import { observable } from '@legendapp/state';
 import { syncObservable } from '@legendapp/state/sync';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SwapProps {
   updateSessionWhenExpires: () => Promise<void>;
@@ -43,6 +45,8 @@ export const Swap = ({
   const [xrpBalance, setXrpBalance] = useState('0');
   const [testBalance, setTestBalance] = useState('0');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   const currentAccount$ = observable<IRelayPKP>();
   syncObservable(currentAccount$, {
@@ -191,18 +195,27 @@ export const Swap = ({
       setTestBalance(newTestBalance);
 
       await client.disconnect();
+
+      toast({
+        title: 'Swap Success',
+      });
     } catch (error) {
       console.error('Swap failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Swap Error',
+        description: 'Failed to complete the swap. Please try again.',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleFlip = () => {
-    setReceiveAmount(calculateReceiveAmount(receiveAmount, receiveCurrency));
     setPayCurrency(receiveCurrency);
     setReceiveCurrency(payCurrency);
-    setPayAmount(receiveAmount);
+    setPayAmount('');
+    setReceiveAmount('0');
   };
 
   function calculateReceiveAmount(payAmount: string, payCurrency: string) {
@@ -217,41 +230,54 @@ export const Swap = ({
     }
   }
 
-  return (
-    <div className="w-full max-w-md mx-auto space-y-6 p-6">
-      <h2 className="text-2xl font-bold text-foreground">Swap</h2>
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value)) {
+      setter(value);
+      if (setter === setPayAmount) {
+        setReceiveAmount(calculateReceiveAmount(value, payCurrency));
+      }
+    }
+  };
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">
-          You Pay
-        </label>
-        <div className="flex items-center space-x-2">
-          <Input
-            type="number"
-            onChange={(e) => {
-              setPayAmount(e.target.value);
-              setReceiveAmount(
-                calculateReceiveAmount(e.target.value, payCurrency),
-              );
-            }}
-            placeholder="0"
-            value={payAmount}
-            className="flex-grow bg-background text-foreground border-input"
-          />
-          <Badge
-            variant="secondary"
-            className="text-secondary-foreground bg-secondary"
-          >
-            {payCurrency}
-          </Badge>
-        </div>
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>
-            Balance: {payCurrency === 'XRP' ? xrpBalance : testBalance}{' '}
-            <span className="font-semibold pl-1">{payCurrency}</span>
-          </span>
-        </div>
-      </div>
+  return (
+    <div className="w-full max-w-md mx-auto space-y-6 px-6">
+      <h2 className="text-2xl font-bold text-foreground">Swap</h2>
+      <Card className="bg-background border-input">
+        <CardContent className="pt-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              You Pay
+            </label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                onChange={(e) => handleInputChange(e, setPayAmount)}
+                placeholder="0"
+                value={payAmount}
+                className="flex-grow bg-transparent text-foreground border-none text-2xl font-semibold"
+              />
+              <Badge
+                variant="secondary"
+                className="text-secondary-foreground bg-secondary"
+              >
+                {payCurrency}
+              </Badge>
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>
+                Balance: {payCurrency === 'XRP' ? xrpBalance : testBalance}{' '}
+                <span className="font-semibold pl-1">{payCurrency}</span>
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="relative py-4">
         <div className="absolute inset-0 flex items-center">
@@ -269,32 +295,38 @@ export const Swap = ({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-muted-foreground">
-          You Receive
-        </label>
-        <div className="flex items-center space-x-2">
-          <Input
-            type="number"
-            value={receiveAmount}
-            onChange={(e) => setReceiveAmount(e.target.value)}
-            className="flex-grow bg-background text-foreground border-input"
-            readOnly
-          />
-          <Badge
-            variant="secondary"
-            className="text-secondary-foreground bg-secondary"
-          >
-            {receiveCurrency}
-          </Badge>
-        </div>
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>
-            Balance: {receiveCurrency === 'XRP' ? xrpBalance : testBalance}
-            <span className="font-semibold pl-1">{receiveCurrency}</span>
-          </span>
-        </div>
-      </div>
+      <Card className="bg-background border-input">
+        <CardContent className="pt-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground">
+              You Receive
+            </label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                value={receiveAmount}
+                onChange={(e) => handleInputChange(e, setReceiveAmount)}
+                className="flex-grow bg-transparent text-foreground border-none text-2xl font-semibold"
+                readOnly
+              />
+              <Badge
+                variant="secondary"
+                className="text-secondary-foreground bg-secondary"
+              >
+                {receiveCurrency}
+              </Badge>
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>
+                Balance: {receiveCurrency === 'XRP' ? xrpBalance : testBalance}
+                <span className="font-semibold pl-1">{receiveCurrency}</span>
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Button
         onClick={handleSwap}
