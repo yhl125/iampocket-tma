@@ -76,7 +76,7 @@ const TokenBalance = ({
           </div>
           <div className="text-right">
             <div className="font-semibold">$0</div>
-            <Badge variant="destructive">0%</Badge>
+            <Badge variant="outline">0%</Badge>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@ const TokenBalance = ({
               </div>
               <div className="text-right">
                 <div className="font-semibold">$0</div>
-                <Badge variant="destructive">0%</Badge>
+                <Badge variant="outline">0%</Badge>
               </div>
             </div>
           ))}

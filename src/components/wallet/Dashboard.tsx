@@ -163,7 +163,7 @@ export default function Dashboard({
       <div className="flex justify-center space-x-2 mb-4">
         <Button
           variant="outline"
-          className="w-full border border-muted"
+          className="w-full bg-primary text-white"
           onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}
         >
           Faucet
@@ -171,7 +171,7 @@ export default function Dashboard({
         {/* <Button>Receive</Button> */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="w-full border border-muted">
+            <Button variant="outline" className="w-full bg-primary text-white">
               Send
             </Button>
           </SheetTrigger>
@@ -200,7 +200,7 @@ export default function Dashboard({
         </Sheet>
         <Button
           variant="outline"
-          className="w-full border border-muted"
+          className="w-full bg-primary text-white"
           onClick={() =>
             updateSessionWhenExpires().then(() =>
               mintNft(
