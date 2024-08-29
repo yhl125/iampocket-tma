@@ -44,6 +44,8 @@ export default function Dashboard({
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [isFaucetLoading, setIsFaucetLoading] = useState(false);
+  const [isMintNftLoading, setIsMintNftLoading] = useState(false);
 
   const currentAccount$ = observable<IRelayPKP>();
   syncObservable(currentAccount$, {
@@ -143,6 +145,44 @@ export default function Dashboard({
     );
   };
 
+  const handleFaucet = async () => {
+    setIsFaucetLoading(true);
+    try {
+      await xrplFaucet(xrplAddress!, xrplNetwork);
+      toast({
+        title: 'Faucet Success',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Faucet Error',
+      });
+    } finally {
+      setIsFaucetLoading(false);
+    }
+  };
+
+  const handleMintNFT = async () => {
+    setIsMintNftLoading(true);
+    try {
+      await updateSessionWhenExpires();
+      await mintNft(
+        getPkpXrplWallet(sessionSigs$.get(), currentAccount$.get()),
+        xrplNetwork,
+      );
+      toast({
+        title: 'Mint Success',
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Mint Error',
+      });
+    } finally {
+      setIsMintNftLoading(false);
+    }
+  };
+
   return (
     <div className="px-4">
       <div className="text-center mb-4">
@@ -162,16 +202,19 @@ export default function Dashboard({
       </div>
       <div className="flex justify-center space-x-2 mb-4">
         <Button
-          variant="outline"
-          className="w-full bg-primary text-white"
-          onClick={() => xrplFaucet(xrplAddress!, xrplNetwork)}
+          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
+          onClick={handleFaucet}
+          disabled={isFaucetLoading}
         >
           Faucet
         </Button>
         {/* <Button>Receive</Button> */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="w-full bg-primary text-white">
+            <Button
+              variant="outline"
+              className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
+            >
               Send
             </Button>
           </SheetTrigger>
@@ -200,15 +243,9 @@ export default function Dashboard({
         </Sheet>
         <Button
           variant="outline"
-          className="w-full bg-primary text-white"
-          onClick={() =>
-            updateSessionWhenExpires().then(() =>
-              mintNft(
-                getPkpXrplWallet(sessionSigs$.get(), currentAccount$.get()),
-                xrplNetwork,
-              ),
-            )
-          }
+          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
+          onClick={handleMintNFT}
+          disabled={isMintNftLoading}
         >
           Mint NFT
         </Button>
