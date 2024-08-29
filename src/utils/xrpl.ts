@@ -417,3 +417,14 @@ export async function sendXrplToken(
   console.log('Payment:', result);
   return result;
 }
+
+export function explorerUrl(network: XrplNetwork, hash: string) {
+  switch (network) {
+    case 'mainnet':
+      return `https://livenet.xrpl.org/transactions/${hash}`;
+    case 'testnet':
+      return `https://testnet.xrpl.org/transactions/${hash}`;
+    case 'devnet':
+      return `https://devnet.xrpl.org/transactions/${hash}`;
+  }
+}

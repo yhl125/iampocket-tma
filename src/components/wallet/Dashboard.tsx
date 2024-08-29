@@ -178,8 +178,8 @@ export default function Dashboard({
           <SheetContent side="bottom" className="h-[calc(100vh-4rem)] pt-6">
             <div className="h-full relative pb-16">
               <SheetHeader>
-                <SheetTitle className="hidden">Send Token</SheetTitle>
-                <SheetDescription></SheetDescription>
+                <SheetTitle />
+                <SheetDescription />
               </SheetHeader>
               <div>
                 <SelectToken
@@ -190,7 +190,9 @@ export default function Dashboard({
               </div>
               <div className="absolute bottom-0 left-0 right-0">
                 <SheetClose asChild>
-                  <Button className="w-full" variant="outline" >Close</Button>
+                  <Button className="w-full" variant="outline">
+                    Close
+                  </Button>
                 </SheetClose>
               </div>
             </div>

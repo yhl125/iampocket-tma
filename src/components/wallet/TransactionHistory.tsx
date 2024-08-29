@@ -8,6 +8,17 @@ import {
   convertHexToString,
 } from 'xrpl';
 import { getXrplCilent, truncateAddress, XrplNetwork } from '@/utils/xrpl';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import TransactionDetail from './transaction/TransactionDetail';
+import { Button } from '@/components/ui/button';
 
 interface TransactionHistoryProps {
   xrplAddress?: string;
@@ -202,44 +213,67 @@ export default function TransactionHistory({
   function groupedTransactionsToComponent() {
     return groupedTransactions.map((group, groupIndex) => (
       <div key={group.date}>
-        <h2 className="text-lg font-semibold text-muted-foreground mt-2">{group.date}</h2>
+        <h2 className="text-lg font-semibold text-muted-foreground mt-2">
+          {group.date}
+        </h2>
         {group.transactions.map((transaction, index) => {
           const tx_json = transaction.tx_json!;
           const meta = transaction.meta as TransactionMetadata;
           const isOutgoing = tx_json.Account === xrplAddress;
           const transactionType = isOutgoing ? 'Sent' : 'Received';
-          const counterpartyAddress = isOutgoing
+          const counterpartyAddress: string | undefined = isOutgoing
             ? (tx_json as any).Destination
             : tx_json.Account;
           const amountColor = isOutgoing ? 'text-red-500' : 'text-green-500';
           const amountPrefix = isOutgoing ? '-' : '+';
 
           return (
-            <div
-              key={tx_json.hash || index}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-            >
-              {index > 0 && <div className="border-t border-border my-2" />}
-              <div className="py-2">
-                <div className="flex items-center space-x-2">
-                  <div className="flex-1">
-                    <div className="text-lg font-semibold">
-                      {tx_json.TransactionType === 'Payment'
-                        ? transactionType
-                        : tx_json.TransactionType}
+            <Sheet key={transaction.hash || index}>
+              <SheetTrigger asChild>
+                <div className="cursor-pointer hover:bg-muted/50 transition-colors">
+                  {index > 0 && <div className="border-t border-border my-2" />}
+                  <div className="py-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-1">
+                        <div className="text-lg font-semibold">
+                          {tx_json.TransactionType === 'Payment'
+                            ? transactionType
+                            : tx_json.TransactionType}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {isOutgoing ? 'To' : 'From'}{' '}
+                          {truncateAddress(counterpartyAddress || '')}
+                        </div>
+                      </div>
+                      <div className={`${amountColor} font-medium`}>
+                        {amountPrefix}
+                        {renderAmount(meta.delivered_amount)}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {isOutgoing ? 'To' : 'From'}{' '}
-                      {truncateAddress(counterpartyAddress || '')}
-                    </div>
-                  </div>
-                  <div className={`${amountColor} font-medium`}>
-                    {amountPrefix}
-                    {renderAmount(meta.delivered_amount)}
                   </div>
                 </div>
-              </div>
-            </div>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-[calc(100vh-4rem)] pt-6">
+                <div className="h-full relative pb-16">
+                  <SheetHeader>
+                    <SheetTitle />
+                    <SheetDescription />
+                  </SheetHeader>
+                  {TransactionDetail({
+                    transaction,
+                    xrplAddress: xrplAddress!,
+                    xrplNetwork,
+                  })}
+                  <div className="absolute bottom-0 left-0 right-0">
+                    <SheetClose asChild>
+                      <Button className="w-full" variant="outline">
+                        Close
+                      </Button>
+                    </SheetClose>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           );
         })}
       </div>
