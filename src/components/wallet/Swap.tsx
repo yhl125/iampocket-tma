@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { AccountLinesTrustline, xrpToDrops } from 'xrpl';
 import { observable } from '@legendapp/state';
 import { syncObservable } from '@legendapp/state/sync';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SwapProps {
   updateSessionWhenExpires: () => Promise<void>;
@@ -44,6 +45,8 @@ export const Swap = ({
   const [xrpBalance, setXrpBalance] = useState('0');
   const [testBalance, setTestBalance] = useState('0');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   const currentAccount$ = observable<IRelayPKP>();
   syncObservable(currentAccount$, {
@@ -192,8 +195,17 @@ export const Swap = ({
       setTestBalance(newTestBalance);
 
       await client.disconnect();
+
+      toast({
+        title: 'Swap Success',
+      });
     } catch (error) {
       console.error('Swap failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Swap Error',
+        description: 'Failed to complete the swap. Please try again.',
+      });
     } finally {
       setIsLoading(false);
     }
