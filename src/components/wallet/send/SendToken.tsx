@@ -90,8 +90,10 @@ const SendToken = ({
           setAvailableAmount(mainTokenBalance?.value || '0');
         } else {
           const trustLineBalance = balances?.filter((balance) => {
-            balance.issuer === token.issuer &&
-              balance.currency === token.currency;
+            return (
+              balance.issuer === token.issuer &&
+              balance.currency === token.currency
+            );
           }) as TrustLineBalance[];
           setAvailableAmount(trustLineBalance[0]?.value || '0');
         }
@@ -204,7 +206,7 @@ const SendToken = ({
 
         <div className="relative">
           <Input
-            placeholder="Recipient's Solana address"
+            placeholder="Recipient's address"
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             className="pl-3 pr-10 py-2 rounded bg-background text-foreground border-input"

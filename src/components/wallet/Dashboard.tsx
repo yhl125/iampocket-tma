@@ -202,19 +202,16 @@ export default function Dashboard({
       </div>
       <div className="flex justify-center space-x-2 mb-4">
         <Button
-          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
+          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 focus:bg-primary focus:text-white"
           onClick={handleFaucet}
           disabled={isFaucetLoading}
         >
-          Faucet
+          {isFaucetLoading ? 'Loading...' : 'Faucet'}
         </Button>
         {/* <Button>Receive</Button> */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
-            >
+            <Button className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 focus:bg-primary focus:text-white">
               Send
             </Button>
           </SheetTrigger>
@@ -242,12 +239,11 @@ export default function Dashboard({
           </SheetContent>
         </Sheet>
         <Button
-          variant="outline"
-          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 transition-colors"
+          className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 focus:bg-primary focus:text-white"
           onClick={handleMintNFT}
           disabled={isMintNftLoading}
         >
-          Mint NFT
+          {isMintNftLoading ? 'Minting...' : 'Mint NFT'}
         </Button>
       </div>
       <TokenBalance
