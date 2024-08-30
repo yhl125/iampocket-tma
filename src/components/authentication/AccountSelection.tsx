@@ -28,7 +28,7 @@ export default function AccountSelection({
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
+    <div className="max-w-md mx-auto px-4 py-12">
       <div className="space-y-4">
         <h1 className="text-2xl font-bold text-center">Choose your account</h1>
         <p className="text-center text-gray-600">
@@ -44,7 +44,7 @@ export default function AccountSelection({
         <form onSubmit={handleSubmit} className="form space-y-4">
           <button
             type="submit"
-            className="btn btn--primary w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="btn btn--primary w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded my-4"
           >
             Continue
           </button>
