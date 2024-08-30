@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import {
   getPkpXrplWallet,
@@ -10,7 +11,6 @@ import {
 import TokenBalance, { TrustLineBalance } from './TokenBalance';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useState, useEffect } from 'react';
 import { AccountLinesTrustline } from 'xrpl';
 import SelectToken from './send/SelectToken';
 import {
@@ -37,7 +37,6 @@ export default function Dashboard({
   xrplNetwork,
 }: DashboardProps) {
   const { toast } = useToast();
-  // fetch balance
   const [mainTokenBalance, setMainTokenBalance] = useState('0');
   const [trustLineBalances, setTrustLineBalances] = useState<
     TrustLineBalance[]
@@ -59,73 +58,75 @@ export default function Dashboard({
       name: 'sessionSigs',
     },
   });
-  useEffect(() => {
-    async function fetchBalance() {
-      setLoading(true);
-      try {
-        if (!xrplAddress) {
-          throw new Error('No xrpl address');
-        }
-        const client = getXrplCilent(xrplNetwork);
-        await client.connect();
 
-        const balances = await client.getBalances(xrplAddress);
-        const mainTokenBalance = balances?.find(
-          (balance) => balance.issuer === undefined,
-        );
-        let trustLineBalances = balances?.filter(
-          (balance) => balance.issuer !== undefined,
-        ) as TrustLineBalance[];
-
-        const accountLines = await client.request({
-          command: 'account_lines',
-          account: xrplAddress,
-        });
-
-        if (accountLines?.result?.lines) {
-          trustLineBalances = trustLineBalances
-            .map((trustlineBalance) => {
-              const trustlineDetails = accountLines.result.lines.find(
-                (line: AccountLinesTrustline) =>
-                  line.currency === trustlineBalance.currency &&
-                  line.account === trustlineBalance.issuer,
-              );
-
-              return {
-                ...trustlineBalance,
-                trustlineDetails:
-                  trustlineDetails && Number(trustlineDetails.limit)
-                    ? {
-                        limit: Number(trustlineDetails.limit),
-                        noRipple: trustlineDetails.no_ripple === true,
-                      }
-                    : undefined,
-              };
-            })
-            .filter(
-              (trustlineBalance) =>
-                trustlineBalance.trustlineDetails ||
-                trustlineBalance.value !== '0',
-            ); // Hide revoked trustlines with a balance of 0
-        }
-
-        if (mainTokenBalance) {
-          setMainTokenBalance(mainTokenBalance.value);
-        }
-        if (trustLineBalances) {
-          setTrustLineBalances(trustLineBalances);
-        }
-      } catch (err) {
-        console.error(err);
-        if (err instanceof Error && err.message == 'Account not found.') {
-          setMainTokenBalance('0');
-        } else {
-          setError(err instanceof Error ? err.message : String(err));
-        }
-      } finally {
-        setLoading(false);
+  const fetchBalance = async () => {
+    setLoading(true);
+    try {
+      if (!xrplAddress) {
+        throw new Error('No xrpl address');
       }
+      const client = getXrplCilent(xrplNetwork);
+      await client.connect();
+
+      const balances = await client.getBalances(xrplAddress);
+      const mainTokenBalance = balances?.find(
+        (balance) => balance.issuer === undefined,
+      );
+      let trustLineBalances = balances?.filter(
+        (balance) => balance.issuer !== undefined,
+      ) as TrustLineBalance[];
+
+      const accountLines = await client.request({
+        command: 'account_lines',
+        account: xrplAddress,
+      });
+
+      if (accountLines?.result?.lines) {
+        trustLineBalances = trustLineBalances
+          .map((trustlineBalance) => {
+            const trustlineDetails = accountLines.result.lines.find(
+              (line: AccountLinesTrustline) =>
+                line.currency === trustlineBalance.currency &&
+                line.account === trustlineBalance.issuer,
+            );
+
+            return {
+              ...trustlineBalance,
+              trustlineDetails:
+                trustlineDetails && Number(trustlineDetails.limit)
+                  ? {
+                      limit: Number(trustlineDetails.limit),
+                      noRipple: trustlineDetails.no_ripple === true,
+                    }
+                  : undefined,
+            };
+          })
+          .filter(
+            (trustlineBalance) =>
+              trustlineBalance.trustlineDetails ||
+              trustlineBalance.value !== '0',
+          );
+      }
+
+      if (mainTokenBalance) {
+        setMainTokenBalance(mainTokenBalance.value);
+      }
+      if (trustLineBalances) {
+        setTrustLineBalances(trustLineBalances);
+      }
+    } catch (err) {
+      console.error(err);
+      if (err instanceof Error && err.message == 'Account not found.') {
+        setMainTokenBalance('0');
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchBalance();
   }, [xrplAddress, xrplNetwork]);
 
@@ -152,6 +153,8 @@ export default function Dashboard({
       toast({
         title: 'Faucet Success',
       });
+      // Fetch updated balance after successful faucet operation
+      await fetchBalance();
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -208,7 +211,6 @@ export default function Dashboard({
         >
           {isFaucetLoading ? 'Loading...' : 'Faucet'}
         </Button>
-        {/* <Button>Receive</Button> */}
         <Sheet>
           <SheetTrigger asChild>
             <Button className="w-full bg-primary text-white hover:bg-primary/90 active:bg-primary/80 focus:bg-primary focus:text-white">
