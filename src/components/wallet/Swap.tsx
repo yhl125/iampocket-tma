@@ -65,6 +65,7 @@ export const Swap = ({
     if (xrplAddress) {
       fetchBalances();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [xrplAddress]);
 
   const getTestTokenBalance = async (

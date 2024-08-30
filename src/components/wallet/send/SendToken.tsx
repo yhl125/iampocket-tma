@@ -116,6 +116,16 @@ const SendToken = ({
     setRecipient(address);
   };
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value)) {
+      setter(value);
+    }
+  };
+
   const handleMaxClick = () => {
     setAmount(availableAmount || '0');
   };
@@ -248,8 +258,11 @@ const SendToken = ({
           <Input
             placeholder="Amount"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => handleInputChange(e, setAmount)}
             className="pl-3 pr-24 py-2 rounded bg-background text-foreground border-input"
+            type="text"
+            inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
           />
           <div className="absolute right-2 flex items-center">
             <span className="mr-2 text-foreground">{getTokenName(token)}</span>
