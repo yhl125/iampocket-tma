@@ -22,6 +22,7 @@ import { syncObservable } from '@legendapp/state/sync';
 import { IRelayPKP, SessionSigsMap } from '@lit-protocol/types';
 import { IssuedCurrencyAmount, Payment, xrpToDrops } from 'xrpl';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SelectTokenProps {
   token: TrustLineBalance | string;
@@ -39,6 +40,9 @@ const SendToken = ({
   const [availableAmount, setAvailableAmount] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
+  const [isSending, setIsSending] = useState(false);
+
+  const { toast } = useToast();
 
   const xrplAddress$ = observable<string>();
   syncObservable(xrplAddress$, {
@@ -176,6 +180,30 @@ const SendToken = ({
     }
   }
 
+  const handleSendToken = async () => {
+    setIsSending(true);
+    try {
+      await updateSessionWhenExpires();
+      const result = await sendToken(token, recipient, amount);
+      console.log('Send result:', result);
+      toast({
+        title: 'Send Success',
+        description: `Sent ${amount} ${getTokenName(
+          token,
+        )} to ${truncateAddress(recipient)}`,
+      });
+      setView('select');
+    } catch (error) {
+      console.error('Send failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Send Error',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleBackClick = () => {
     setView('select');
   };
@@ -293,15 +321,17 @@ const SendToken = ({
             variant="outline"
             className="flex-1 border-input text-foreground hover:bg-accent hover:text-accent-foreground"
             onClick={() => setView('select')}
+            disabled={isSending}
           >
             Cancel
           </Button>
           <Button
             variant="default"
             className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => sendToken(token, recipient, amount)}
+            onClick={handleSendToken}
+            disabled={isSending || !recipient || !amount}
           >
-            Confirm
+            {isSending ? 'Sending...' : 'Confirm'}
           </Button>
         </div>
       </CardContent>
