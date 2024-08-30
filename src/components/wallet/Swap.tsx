@@ -248,7 +248,7 @@ export const Swap = ({
     <div className="w-full max-w-md mx-auto space-y-6 px-6">
       <h2 className="text-2xl font-bold text-foreground">Swap</h2>
       <Card className="bg-background border-input">
-        <CardContent className="pt-6">
+        <CardContent className="pt-5">
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">
               You Pay
@@ -280,7 +280,7 @@ export const Swap = ({
         </CardContent>
       </Card>
 
-      <div className="relative py-4">
+      <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-border"></div>
         </div>
