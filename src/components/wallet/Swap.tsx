@@ -245,7 +245,7 @@ export const Swap = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6 px-6">
+    <div className="w-full max-w-md mx-auto space-y-4 px-6">
       <h2 className="text-2xl font-bold text-foreground">Swap</h2>
       <Card className="bg-background border-input">
         <CardContent className="pt-5">
