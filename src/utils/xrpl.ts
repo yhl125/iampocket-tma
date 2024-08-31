@@ -266,20 +266,26 @@ export async function mintNft(pkpWallet: PKPXrplWallet, network: XrplNetwork) {
 }
 
 export async function xrplFaucet(address: string, network: XrplNetwork) {
-  const client = getXrplCilent(network);
-  await client.connect();
-  const { classicAddressToFund, balance } = await requestFunding(
-    {},
-    client,
-    0,
-    address,
-    {
-      destination: address,
-      userAgent: 'xrpl.js',
-    },
-  );
-  await client.disconnect();
-  return { classicAddressToFund, balance };
+  try {
+    const client = getXrplCilent(network);
+    await client.connect();
+    const { classicAddressToFund, balance } = await requestFunding(
+      {},
+      client,
+      0,
+      address,
+      {
+        destination: address,
+        userAgent: 'xrpl.js',
+      },
+    );
+    await client.disconnect();
+    return { classicAddressToFund, balance };
+  } catch (err) {
+    if (err instanceof Error && err.message == 'Account not found.') {
+      return { address, balance: 100 };
+    }
+  }
 }
 
 export function getPkpXrplWallet(
