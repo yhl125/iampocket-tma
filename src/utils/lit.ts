@@ -31,7 +31,7 @@ const LIT_RELAYER_API_KEY = 'test-api-key';
 export const iampocketRelayServer =
   process.env.NEXT_PUBLIC_ENV === 'production'
     ? 'https://iampocket-relay-server.vercel.app'
-    : 'https://iampocket-relay-server-hxqyyrkus-yhl125s-projects.vercel.app';
+    : 'http://localhost:3001';
 
 export const DOMAIN = process.env.NEXT_PUBLIC_PROD_URL || 'localhost';
 export const ORIGIN =
