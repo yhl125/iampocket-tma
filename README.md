@@ -1,43 +1,19 @@
-# Telegram Mini Apps Next.js Template
-
-This template demonstrates how developers can implement a web application on the Telegram
-Mini Apps platform using the following technologies and libraries:
-
-- [Next.js](https://nextjs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview)
-- [@telegram-apps SDK](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk)
-- [Telegram UI](https://github.com/Telegram-Mini-Apps/TelegramUI)
-
-> The template was created using [pnpm](https://pnpm.io/). Therefore, it is required to use
-> it for this project as well. Using other package managers, you will receive a corresponding error.
-
-## Install Dependencies
-
-If you have just cloned this template, you should install the project dependencies using the
-command:
+## Install
 
 ```Bash
 pnpm install
 ```
 
-## Scripts
+## Running the app in local
 
-This project contains the following scripts:
+run iampocket-relay-server first
+  
+  ```Bash
+  pnpm run dev
+  ```
 
-- `dev`. Runs the application in development mode.
-- `dev:https`. Runs the application in development mode using self-signed SSL certificate.
-- `build`. Builds the application for production.
-- `start`. Starts the Next.js server in production mode.
-- `lint`. Runs [eslint](https://eslint.org/) to ensure the code quality meets the required
-  standards.
-
-To run a script, use the `pnpm run` command:
-
-```Bash
-pnpm run {script}
-# Example: pnpm run build
-```
+## Live Demo
+https://t.me/iampocket_bot/app
 
 ## Create Bot and Mini App
 
@@ -128,3 +104,8 @@ details.
 - [Platform documentation](https://docs.telegram-mini-apps.com/)
 - [@telegram-apps/sdk-react documentation](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk-react)
 - [Telegram developers community chat](https://t.me/devs)
+- [Next.js](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview)
+- [@telegram-apps SDK](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk)
+- [Telegram UI](https://github.com/Telegram-Mini-Apps/TelegramUI)
