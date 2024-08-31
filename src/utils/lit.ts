@@ -28,7 +28,10 @@ import { ethers } from 'ethers';
 const LIT_NETWORK = LitNetwork.Datil;
 const LIT_RELAYER_URL = `https://${LIT_NETWORK}-relayer.getlit.dev/register-payer`;
 const LIT_RELAYER_API_KEY = 'test-api-key';
-export const iampocketRelayServer = 'https://iampocket-relay-server.vercel.app';
+export const iampocketRelayServer =
+  process.env.NEXT_PUBLIC_ENV === 'production'
+    ? 'https://iampocket-relay-server.vercel.app'
+    : 'https://iampocket-relay-server-hxqyyrkus-yhl125s-projects.vercel.app/';
 
 export const DOMAIN = process.env.NEXT_PUBLIC_PROD_URL || 'localhost';
 export const ORIGIN =
@@ -63,7 +66,7 @@ export function isSocialLoginSupported(provider: string): boolean {
 export async function signInWithGoogle(redirectUri: string): Promise<void> {
   const googleProvider = litAuthClient.initProvider<GoogleProvider>(
     ProviderType.Google,
-    { redirectUri }
+    { redirectUri },
   );
   await googleProvider.signIn();
 }
@@ -72,11 +75,11 @@ export async function signInWithGoogle(redirectUri: string): Promise<void> {
  * Get auth method object from redirect
  */
 export async function authenticateWithGoogle(
-  redirectUri: string
+  redirectUri: string,
 ): Promise<AuthMethod | undefined> {
   const googleProvider = litAuthClient.initProvider<GoogleProvider>(
     ProviderType.Google,
-    { redirectUri }
+    { redirectUri },
   );
   const authMethod = await googleProvider.authenticate();
   return authMethod;
@@ -88,7 +91,7 @@ export async function authenticateWithGoogle(
 export async function signInWithDiscord(redirectUri: string): Promise<void> {
   const discordProvider = litAuthClient.initProvider<DiscordProvider>(
     ProviderType.Discord,
-    { redirectUri }
+    { redirectUri },
   );
   await discordProvider.signIn();
 }
@@ -97,11 +100,11 @@ export async function signInWithDiscord(redirectUri: string): Promise<void> {
  * Get auth method object from redirect
  */
 export async function authenticateWithDiscord(
-  redirectUri: string
+  redirectUri: string,
 ): Promise<AuthMethod | undefined> {
   const discordProvider = litAuthClient.initProvider<DiscordProvider>(
     ProviderType.Discord,
-    { redirectUri }
+    { redirectUri },
   );
   const authMethod = await discordProvider.authenticate();
   return authMethod;
@@ -112,14 +115,14 @@ export async function authenticateWithDiscord(
  */
 export async function authenticateWithEthWallet(
   address?: string,
-  signMessage?: (message: string) => Promise<string>
+  signMessage?: (message: string) => Promise<string>,
 ): Promise<AuthMethod | undefined> {
   const ethWalletProvider = litAuthClient.initProvider<EthWalletProvider>(
     ProviderType.EthWallet,
     {
       domain: DOMAIN,
       origin: ORIGIN,
-    }
+    },
   );
   const authMethod = await ethWalletProvider.authenticate({
     address,
@@ -133,7 +136,7 @@ export async function authenticateWithEthWallet(
  */
 export async function registerWebAuthn(): Promise<IRelayPKP> {
   const provider = litAuthClient.initProvider<WebAuthnProvider>(
-    ProviderType.WebAuthn
+    ProviderType.WebAuthn,
   );
   // Register new WebAuthn credential
   const options = await provider.register();
@@ -163,7 +166,7 @@ export async function authenticateWithWebAuthn(): Promise<
   let provider = litAuthClient.getProvider(ProviderType.WebAuthn);
   if (!provider) {
     provider = litAuthClient.initProvider<WebAuthnProvider>(
-      ProviderType.WebAuthn
+      ProviderType.WebAuthn,
     );
   }
   const authMethod = await provider.authenticate();
@@ -175,7 +178,7 @@ export async function authenticateWithWebAuthn(): Promise<
  */
 export async function authenticateWithStytch(
   accessToken: string,
-  userId?: string
+  userId?: string,
 ) {
   const provider = litAuthClient.initProvider(ProviderType.StytchOtp, {
     appId: process.env.NEXT_PUBLIC_STYTCH_PROJECT_ID || '',
@@ -207,13 +210,13 @@ export async function getSessionSigs({
     return sessionSigs;
   } else {
     throw new Error(
-      `Provider not found for auth method type ${authMethod.authMethodType}`
+      `Provider not found for auth method type ${authMethod.authMethodType}`,
     );
   }
 }
 
 export async function updateSessionSigs(
-  params: GetSessionSigsProps
+  params: GetSessionSigsProps,
 ): Promise<SessionSigs> {
   const sessionSigs = await litNodeClient.getSessionSigs(params);
   return sessionSigs;
@@ -263,7 +266,7 @@ function getProviderByAuthMethod(authMethod: AuthMethod) {
 }
 
 export async function createPKPWithTelegram(
-  initDataRaw: string
+  initDataRaw: string,
 ): Promise<IRelayPKP> {
   const response = await fetch(`${iampocketRelayServer}/telegram/create-pkp`, {
     method: 'POST',
@@ -276,7 +279,7 @@ export async function createPKPWithTelegram(
 }
 
 export async function getTelegramPKPs(
-  initDataRaw: string
+  initDataRaw: string,
 ): Promise<IRelayPKP[]> {
   const response = await fetch(`${iampocketRelayServer}/telegram/get-pkps`, {
     method: 'POST',
@@ -293,7 +296,7 @@ export async function getTelegramPKPSessionSigs(
   telegramUserId: string,
   pkpPublicKey: string,
   expiration: string,
-  authSig: AuthSig
+  authSig: AuthSig,
 ): Promise<SessionSigsMap> {
   await litNodeClient.connect();
   const litActionCode = `(async () => {
@@ -429,7 +432,7 @@ export interface RegisterPayerResult {
 // }
 
 export async function registerPayer(
-  initDataRaw: string
+  initDataRaw: string,
 ): Promise<RegisterPayerResult> {
   try {
     console.log('🔄 Registering new payer...');
@@ -459,7 +462,7 @@ export async function registerPayer(
 export async function addUsers(
   initDataRaw: string,
   payerPrivateKey: string,
-  payee: string
+  payee: string,
 ): Promise<boolean> {
   try {
     console.log(`🔄 Adding user as delegatees...`);
@@ -492,7 +495,7 @@ export async function addUsers(
 export async function getPayerAuthSig(
   initDataRaw: string,
   payerPrivateKey: string,
-  payee: string
+  payee: string,
 ): Promise<AuthSig> {
   try {
     console.log(`🔄 getting payer auth sig...`);
