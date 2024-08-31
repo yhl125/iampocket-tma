@@ -153,6 +153,8 @@ export default function Dashboard({
       toast({
         title: 'Faucet Success',
       });
+      // wait for a sec to update balance
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       // Fetch updated balance after successful faucet operation
       await fetchBalance();
     } catch (error) {
