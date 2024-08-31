@@ -1,107 +1,108 @@
-## Install
+# Next.js Telegram Mini App with PKP-XRPL Integration
 
-```Bash
-pnpm install
-```
+This project is a Next.js-based Telegram Mini App that integrates with iampocket-relay-server for Telegram authentication and payments on the Lit Protocol. It uses pkp-xrpl to create seedless wallets, providing a seamless crypto experience within Telegram.
 
-## Running the app in local
+## Table of Contents
 
-run iampocket-relay-server first
-  
-  ```Bash
-  pnpm run dev
-  ```
+- [Features](#features)
+- [Demo](#demo)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the App](#running-the-app)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Useful Links](#useful-links)
 
-## Live Demo
-https://t.me/iampocket_bot/app
+## Features
 
-## Create Bot and Mini App
+- Telegram authentication
+- Seedless wallet creation using pkp-xrpl
+- Wallet functionality:
+  - Faucet
+  - Mint NFT
+  - Send tokens
+  - View tokens
+  - View NFTs
+  - Swap tokens
+  - Transaction history
+- Login and signup pages
+- Integration with iampocket-relay-server for backend operations
 
-Before you start, make sure you have already created a Telegram Bot. Here is
-a [comprehensive guide](https://docs.telegram-mini-apps.com/platform/creating-new-app) on how to
-do it.
+## Demo
 
-## Run
+Check out our demo video: [YouTube Short](https://youtube.com/shorts/vCHsFUCkges?feature=share)
 
-Although Mini Apps are designed to be opened
-within [Telegram applications](https://docs.telegram-mini-apps.com/platform/about#supported-applications),
-you can still develop and test them outside of Telegram during the development process.
+Live Demo: https://t.me/iampocket_bot/app
 
-To run the application in the development mode, use the `dev` script:
+## Prerequisites
 
-```bash
-pnpm run dev
-```
+- Node.js (v14 or later recommended)
+- pnpm package manager
+- Telegram Bot Token
+- Access to iampocket-relay-server
 
-After this, you will see a similar message in your terminal:
+## Installation
 
-```bash
-▲ Next.js 14.2.3
-- Local:        http://localhost:3000
+Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-✓ Starting...
-✓ Ready in 2.9s
-```
+## Running the App
 
-To view the application, you need to open the `Local`
-link (`http://localhost:3000` in this example) in your browser.
+1. Start the iampocket-relay-server
 
-It is important to note that some libraries in this template, such as `@telegram-apps/sdk`, are not
-intended for use outside of Telegram.
+2. Run the Next.js app:
+   ```bash
+   pnpm run dev
+   ```
 
-Nevertheless, they appear to function properly. This is because the `src/hooks/useTelegramMock.ts`
-file, which is imported in the application's `Root` component, employs the `mockTelegramEnv`
-function to simulate the Telegram environment. This trick convinces the application that it is
-running in a Telegram-based environment. Therefore, be cautious not to use this function in
-production mode unless you fully understand its implications.
+   For HTTPS development (required for Telegram integration):
+   ```bash
+   pnpm run dev:https
+   ```
 
-### Run Inside Telegram
+## Development
 
-Although it is possible to run the application outside of Telegram, it is recommended to develop it
-within Telegram for the most accurate representation of its real-world functionality.
+### Local Development
 
-To run the application inside Telegram, [@BotFather](https://t.me/botfather) requires an HTTPS link.
+You can develop and test the app outside of Telegram:
 
-This template already provides a solution.
+1. Run the app:
+   ```bash
+   pnpm run dev
+   ```
 
-To retrieve a link with the HTTPS protocol, consider using the `dev:https` script:
+2. Open `http://localhost:3000` in your browser.
 
-```bash
-$ pnpm run dev:https
+Note: Some Telegram-specific features may not work properly in this mode.
+Important: Telegram authentication does not work in the development environment because the useInitData doesn't have bot data for authentication.
 
-▲ Next.js 14.2.3
-- Local:        https://localhost:3000
+### Telegram Integration
 
-✓ Starting...
-✓ Ready in 2.4s
-```
+For the full Telegram experience:
 
-Visiting the `Local` link (`https://localhost:3000` in this example) in your
-browser, you will see the following warning:
+1. Deploy your app to a public URL
 
-![SSL Warning](assets/ssl-warning.png)
+2. Submit the link you deployed to [@BotFather](https://t.me/botfather) as your Mini App link.
 
-This browser warning is normal and can be safely ignored as long as the site is secure. Click
-the `Proceed to localhost (unsafe)` button to continue and view the application.
+3. Test your app in the Telegram mini app
 
-Once the application is displayed correctly, submit the
-link `https://127.0.0.1:3000` (`https://localhost:3000` is considered as invalid by BotFather) as
-the Mini App link to [@BotFather](https://t.me/botfather). Then, navigate
-to [https://web.telegram.org/k/](https://web.telegram.org/k/), find your bot, and launch the
-Telegram Mini App. This approach provides the full development experience.
+### Creating a Telegram Bot and Mini App
 
-## Deploy
+Follow this [comprehensive guide](https://docs.telegram-mini-apps.com/platform/creating-new-app) to create your Telegram Bot and set up the Mini App.
 
-The easiest way to deploy your Next.js app is to use
-the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)
-from the creators of Next.js.
+## Architecture
 
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more
-details.
+This app uses:
+- Next.js for the frontend
+- iampocket-relay-server for backend operations and Telegram authentication and payments for the Lit Protocol
+- pkp-xrpl for creating seedless wallets
+- Lit Protocol for decentralized key management
 
 ## Useful Links
 
-- [Platform documentation](https://docs.telegram-mini-apps.com/)
+- [Telegram Mini Apps Platform documentation](https://docs.telegram-mini-apps.com/)
 - [@telegram-apps/sdk-react documentation](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk-react)
 - [Telegram developers community chat](https://t.me/devs)
 - [Next.js](https://nextjs.org/)
@@ -109,3 +110,5 @@ details.
 - [TON Connect](https://docs.ton.org/develop/dapps/ton-connect/overview)
 - [@telegram-apps SDK](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk)
 - [Telegram UI](https://github.com/Telegram-Mini-Apps/TelegramUI)
+- [Lit Protocol](https://litprotocol.com/)
+- [XRPL (XRP Ledger)](https://xrpl.org/)
